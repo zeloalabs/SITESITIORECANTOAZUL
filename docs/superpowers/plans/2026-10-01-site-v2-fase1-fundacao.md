@@ -1455,7 +1455,7 @@ export function bookingUrl(opts: { propId: number; roomId: number; referer: stri
 
 Os nomes de parâmetro da URL do site são `checkin`, `checkout`, `adultos` e `criancas`.
 
-- [ ] **Step 1: Testes que falham de `search`**
+- [x] **Step 1: Testes que falham de `search`**
 
 `src/lib/beds24/search.test.ts`:
 ```ts
@@ -1521,12 +1521,12 @@ describe("parseSearch", () => {
 });
 ```
 
-- [ ] **Step 2: Rodar e ver falhar**
+- [x] **Step 2: Rodar e ver falhar**
 
 Run: `npx vitest run src/lib/beds24/search.test.ts`
 Expected: FAIL, módulo não encontrado.
 
-- [ ] **Step 3: Implementar `search.ts`**
+- [x] **Step 3: Implementar `search.ts`**
 
 `src/lib/beds24/search.ts`:
 ```ts
@@ -1581,12 +1581,12 @@ export function parseSearch(params: URLSearchParams, today: string): { ok: true;
 }
 ```
 
-- [ ] **Step 4: Rodar e ver passar**
+- [x] **Step 4: Rodar e ver passar**
 
 Run: `npx vitest run src/lib/beds24/search.test.ts`
 Expected: PASS (9 testes).
 
-- [ ] **Step 5: Testes que falham de `bookingUrl`**
+- [x] **Step 5: Testes que falham de `bookingUrl`**
 
 `src/lib/beds24/booking-url.test.ts`:
 ```ts
@@ -1629,12 +1629,12 @@ describe("bookingUrl", () => {
 });
 ```
 
-- [ ] **Step 6: Rodar e ver falhar**
+- [x] **Step 6: Rodar e ver falhar**
 
 Run: `npx vitest run src/lib/beds24/booking-url.test.ts`
 Expected: FAIL, módulo não encontrado.
 
-- [ ] **Step 7: Implementar `booking-url.ts`**
+- [x] **Step 7: Implementar `booking-url.ts`**
 
 `src/lib/beds24/booking-url.ts`:
 ```ts
@@ -1658,7 +1658,7 @@ export function bookingUrl(opts: { propId: number; roomId: number; referer: stri
 }
 ```
 
-- [ ] **Step 8: Rodar e ver passar; commit**
+- [x] **Step 8: Rodar e ver passar; commit**
 
 Run: `npx vitest run src/lib/beds24/`
 Expected: PASS (todos).

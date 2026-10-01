@@ -55,3 +55,6 @@ next-env.d.ts
 
 # vinext dev
 /.vinext
+
+# local dev tools
+.serena/
