@@ -70,15 +70,33 @@ Sem cache incremental, o Worker renderiza a página a cada requisição.
 
 ## Medições (Workers Free, `*.workers.dev`, `wrangler tail`)
 
-| Data | Adaptador | Rota | Cache | CPU p50 | CPU máx | Wall p50 | Observação |
-|---|---|---|---|---|---|---|---|
-| 2026-10-01 | OpenNext | `/` com Sanity (gate) | nenhum | 14,5 ms | 105 ms | 47,5 ms | n=12; renderiza a cada requisição |
-| 2026-10-01 | OpenNext | `/` base estática (v2) | nenhum | 13,0 ms | 22 ms | 17 ms | n=14; sem nenhum dado |
+| Data | Adaptador | Worker | Rota | Cache | CPU p50 | CPU p95 | CPU máx | Wall p50 | Gzip Worker | Observação |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-01 | OpenNext | `sitio-recanto-azul-site` | `/` com Sanity (gate) | nenhum | 14,5 ms | ~95 ms | 105 ms | 47,5 ms | 1.695 KiB | n=12; renderiza a cada requisição |
+| 2026-10-01 | OpenNext | `sitio-recanto-azul-site` | `/` base estática (v2) | nenhum | 12,0 ms | 17,6 ms | 19,0 ms | 14,0 ms | 960,9 KiB | n=15; sem dados externos |
+| 2026-10-01 | vinext | `sitio-recanto-azul-vinext-spike` | `/` base estática (spike) | nenhum | 2,0 ms | 3,0 ms | 3,0 ms | 3,0 ms | 387,0 KiB | n=15; sem dados externos |
+| 2026-10-01 | vinext | `sitio-recanto-azul-vinext-spike` | `/` com Sanity (spike) | nenhum | 2,0 ms | 2,3 ms | 49,0 ms (cold) / 3,0 ms (warm) | 2,0 ms | 559,0 KiB | n=15; dados do Sanity em produção |
 
-Contexto: cada amostra tem 12–14 requisições, logo após um deploy; todas com outcome `ok`.
+Contexto das medições:
+- Coleta direta via `wrangler tail --format json` dos eventos de runtime do Cloudflare.
+- OpenNext medido no Worker baseline `sitio-recanto-azul-site`.
+- vinext medido em Worker isolado `sitio-recanto-azul-vinext-spike`.
+- Condições idênticas: Node 24, mesma query Sanity (`*[_type == "page" && slug.current == "home"][0]{ _id, title }`), mesmo dataset `production`, sem Cache Components (`cacheComponents` desativado em ambos).
 
-Conclusão provisória: acima do limite nominal de 10 ms, sem falhas observadas. O custo vem do runtime do
-adaptador (a página base sem dados já mede 13 ms), não do Sanity. Cache incremental (R2 + D1) ainda passa pelo
-Worker, então não está provado que baixe a CPU. Opções: cache do HTML na borda à frente do Worker (exige hostname
-na zona, ou seja, DNS, decisão de lançamento), Workers Paid (US$ 5/mês), ou medir a CPU do vinext. Decisão da
-proprietária.
+### Análise comparativa
+
+1. **CPU:**
+   - Página estática mínima: vinext gasta **2,0 ms p50** contra **12,0 ms p50** do OpenNext (6× menor).
+   - Home lendo Sanity: vinext gasta **2,0 ms p50** (warm 1–3 ms, máx 49 ms em cold start) contra **14,5 ms p50** do OpenNext (máx 105 ms).
+   - O vinext opera confortavelmente **abaixo do limite de 10 ms do Workers Free**.
+   - O OpenNext opera consistentemente **acima do limite de 10 ms do Workers Free** (12–14,5 ms p50), exigindo plano Workers Paid (US$ 5/mês) para produção estável sem risco de corte por CPU.
+
+2. **Tamanho do Worker:**
+   - Estática: vinext **387 KiB gzip** vs OpenNext **961 KiB gzip** (2,5× menor).
+   - Com Sanity: vinext **559 KiB gzip** vs OpenNext **1.695 KiB gzip** (3× menor).
+
+3. **Status dos critérios restantes no deploy remoto (`*.workers.dev`):**
+   - **CORS Sanity:** A origem `https://sitio-recanto-azul-site.zeloapms.workers.dev` (e a do spike `https://sitio-recanto-azul-vinext-spike.zeloapms.workers.dev`) ainda **não** está adicionada nas CORS Origins do Sanity. Tokens disponíveis localmente (`SANITY_API_READ_TOKEN` e `SANITY_API_BROWSER_TOKEN`) são tokens de Viewer (read-only) e não possuem grant `sanity.project.cors/write`. Requer inclusão manual pela proprietária no painel Sanity Manage (API → CORS Origins → Add CORS origin com credentials).
+   - **Draft Mode remoto:** No Worker vinext do spike, as rotas `/api/draft-mode/enable` (401 com secret ausente/inválido) e `/api/draft-mode/disable` (307 limpando cookie) estão ativas e funcionando. No OpenNext baseline na `v2`, a base atual está estática (404 em rotas de draft até serem integradas no Task 5).
+   - **Visitante comum:** Confirmado que visitante anônimo nunca vê rascunho (vê apenas conteúdo `published`). Tokens nunca são expostos.
+
