@@ -19,6 +19,7 @@ const eslintConfig = defineConfig([
     "dist/**",
     "test-results/**",
     "playwright-report/**",
+    "worker-configuration.d.ts",
   ]),
 ]);
 

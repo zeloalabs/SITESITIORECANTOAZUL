@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "sanity dev",
     "build": "sanity build",
-    "deploy": "sanity deploy"
+    "deploy": "SANITY_STUDIO_PREVIEW_URL=https://sitio-recanto-azul-site.zeloapms.workers.dev sanity deploy"
   },
   "engines": {
     "node": ">=24 <25"

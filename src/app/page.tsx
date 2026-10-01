@@ -1,14 +1,10 @@
-import { defineQuery } from "next-sanity";
-import { sanityFetch } from "@/lib/content/live";
-
-const HOME_QUERY = defineQuery(`*[_type == "page" && slug.current == "home"][0]{ _id, title }`);
+import { sanityFetch } from "@/lib/content/client";
+import { PAGE_BY_SLUG_QUERY } from "@/lib/content/queries";
+import { SectionRenderer } from "@/components/sections/SectionRenderer";
+import type { PageDoc } from "@/lib/content/types";
 
 export default async function Home() {
-  const { data } = await sanityFetch({ query: HOME_QUERY });
-  const page = data as { _id: string; title?: string } | null;
-  return (
-    <main>
-      <h1>{page?.title ?? "Sítio Recanto Azul"}</h1>
-    </main>
-  );
+  const { data } = await sanityFetch({ query: PAGE_BY_SLUG_QUERY, params: { slug: "home" } });
+  const page = data as PageDoc | null;
+  return <main>{page ? <SectionRenderer sections={page.sections} /> : null}</main>;
 }

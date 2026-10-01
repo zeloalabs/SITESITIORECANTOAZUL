@@ -38,7 +38,10 @@ Testado e validado em `https://sitio-recanto-azul-vinext-spike.zeloapms.workers.
 
 ### Configuração de Cache
 
-- Arquitetura mínima adotada: sem `workers-cache`, sem R2, sem KV, sem Durable Objects.
+> **Superado em 2026-10-01 (Task 5)** — ver "Workers Cache (Task 5)" abaixo. A medição de 2,00 ms do gate era de
+> cache HIT em memória do vinext, não de render real.
+
+- Arquitetura mínima adotada: sem R2, sem KV, sem Durable Objects.
 - Não utilizar Cache Components (`'use cache'`).
 - Segredos lidos exclusivamente via `getCloudflareContext().env` ou `bindings.secret()`, nunca embutidos em `.env.local` de produção.
 
@@ -58,3 +61,70 @@ Contexto das medições:
 - Condições: Node 24, query Sanity real, dataset `production`, sem Cache Components, secret via `bindings.secret()`.
 - Erros ou exceções observadas nas 20 requisições: 0.
 
+
+## Workers Cache (Task 5, 2026-10-01) — decisão: Workers Free + Workers Cache
+
+### Problema encontrado
+- O vinext guarda páginas num cache **em memória por isolate** (`x-vinext-cache: HIT`, `s-maxage=31536000`).
+  O `next-sanity` busca com `revalidate: false`, e a revalidação on-demand do `SanityLive` só limpa o isolate
+  que recebe a server action. Resultado observado: a Home ficou presa vazia depois de apagar o documento do spike.
+- A Home passou a ser dinâmica (`export const dynamic = "force-dynamic"` no layout). Render real, aquecido:
+  **CPU p50 7 ms, p95 8 ms, máx 9–11 ms** (n=24) — perto/acima do limite Free.
+
+### Arquitetura adotada
+- Entrada própria do Worker: `src/worker/index.ts`.
+  - Gateway `default`: **sem** Workers Cache (`cache.enabled: false` global).
+  - `PublicPages` (`WorkerEntrypoint`): **com** Workers Cache (`exports.PublicPages.cache.enabled: true`), chamado via
+    `ctx.exports.PublicPages.fetch()`.
+  - Declarar `default` em `exports` quebra o `vite dev` do `@cloudflare/vite-plugin` (gera `export const default`),
+    por isso o desligamento do gateway é pelo `cache` global.
+- Só vai ao cache (`src/worker/cache-policy.ts`): `GET`/`HEAD`, fora de `/api/*`, sem cookie
+  `__prerender_bypass`/`sanity-preview-perspective`, sem `Authorization`, sem `RSC`/`_rsc`.
+- Resposta pública 200 sem `Set-Cookie`: `Cache-Control: public, max-age=0, must-revalidate`,
+  `CDN-Cache-Control: max-age=60`, `Cache-Tag: public-pages`. Qualquer outra: `private, no-store`.
+- Draft Mode/Presentation e páginas fora do cache: `Cache-Control: private, no-store`.
+- Invalidação: webhook Sanity `site-v2-purge-cache` (id `6mwqYU2DEAh4yeS5`, dataset `production`, sem drafts,
+  `create/update/delete` de `page`, `siteSettings`, `accommodation`, `whatsappContact`) →
+  `POST /api/sanity-webhook` (assinatura HMAC via `@sanity/webhook`, secret `SANITY_WEBHOOK_SECRET`) →
+  RPC `PublicPages.purgePublicCache()` → `ctx.cache.purge({ tags: ["public-pages"] })`.
+  O purge é por entrypoint; por isso roda dentro do `PublicPages`.
+- TTL de 60 s na borda é o fallback se o purge falhar.
+- Cache-key inclui a versão do Worker: cada deploy começa frio.
+- Sem R2, KV, Durable Objects ou Cache Components. `workers-cache` do vinext continua fora.
+
+### Medições (preview `sitio-recanto-azul-site`, `wrangler tail`)
+
+| Caso | n | CPU p50 | CPU p95 | CPU máx | Observação |
+|---|---|---|---|---|---|
+| HIT (`/`) | 25 | 0 ms (gateway) | 0 ms | 0 ms | `PublicPages` não executa; só o gateway roda |
+| MISS `PublicPages` (1ª rodada, deploy novo) | 15 | 52 ms | 119 ms | 120 ms | isolates frios; MISS roda no tier superior |
+| MISS `PublicPages` (2ª rodada) | 30 | 19 ms | 89 ms | 113 ms | wall ~640 ms nos frios |
+| Render sem cache no gateway (cookie inválido) | 17 | 8 ms | 15 ms | 49 ms | mesmo render, isolate local aquecido |
+
+Leitura: HIT não gasta CPU de render. MISS fica acima de 10 ms com frequência, porque quase sempre cai num isolate
+frio (tiered cache). Todos os eventos com `outcome: ok` (nenhum corte). Com TTL de 60 s, MISS ≈ 1 por minuto por
+local de cache. **Repetir a medição com a Home real da Fase 2; se os MISS passarem de 10 ms de forma consistente,
+migrar para Workers Paid.**
+
+### Verificação ponta a ponta (preview remoto)
+| Teste | Resultado |
+|---|---|
+| 1ª requisição pública | `MISS`, conteúdo correto; seguintes `HIT` |
+| Draft Mode | 307 + cookies `__prerender_bypass`, `sanity-preview-perspective`, `sanity-preview-variant`; resposta `private, no-store`, sem `cf-cache-status` |
+| Clique → campo (stega) | Hero → `page-home` `sections[_key=="hero1"].title`; Texto → `sections[_key=="texto1"].title` e `.body[...].text` |
+| Draft visível em draft mode | sim (título de rascunho + stega) |
+| Anônimo durante draft (20×) | 0 rascunho, 0 stega, 0 `drafts.`; 19 HIT / 1 EXPIRED |
+| Descartar draft | draft view e anônimo voltam ao publicado |
+| Publicar | visível ao anônimo em 2,7 s (webhook → purge → MISS); 20/20 seguintes com o novo título |
+| Fallback sem purge (webhook desativado) | novo conteúdo visível em 34 s (`EXPIRED`) |
+| Tokens | prefixos do token server, browser e do secret do webhook: 0 no HTML/RSC anônimo, 0 nos ~850 KB de JS, 0 no build, 0 em `wrangler tail`, logs de build/deploy e `vite dev`. Token browser: 1 ocorrência só em draft mode (HTML e RSC). Token server: 0 em draft mode |
+| Beds24/API | `/api/*` nunca vai ao `PublicPages`; sem `cdn-cache-control` (teste unitário + e2e) |
+
+Limite desta verificação: clique → campo foi provado pelo destino do stega (o mesmo que o overlay usa), e o draft por
+render em draft mode. A atualização ao vivo dentro do iframe do Presentation não foi observada visualmente nesta sessão.
+
+### Desvios do plano
+1. Home dinâmica na origem + Workers Cache na borda, não estática/ISR (Step 6b).
+2. `compatibilityDate` `2026-10-01` → `2026-09-28` (workerd local só suporta até 2026-09-28).
+3. `npm run dev` agora roda vinext (`vite dev --port 3000`, lê `.dev.vars`); `next dev` ficou em `dev:next`.
+4. Entrada do Worker própria (`src/worker/index.ts`) em vez de `vinext/server/fetch-handler` direto.
