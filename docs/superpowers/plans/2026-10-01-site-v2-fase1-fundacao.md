@@ -6,9 +6,9 @@
 
 **Goal:** Ter a branch `v2` do repo `zeloalabs/SITESITIORECANTOAZUL` com o site antigo arquivado, uma app Next.js nova publicada em preview no Cloudflare Workers, edição visual Sanity funcionando ponta a ponta, e o núcleo Beds24 server-side (client com circuit breaker, validação de busca, link de reserva, descoberta de property/rooms) testado.
 
-**Architecture:** Next.js (App Router) roda no Cloudflare Workers via vinext ou OpenNext (gate no Task 3). Conteúdo vem do Sanity (Studio hospedado em `*.sanity.studio`, Presentation tool apontando para a rota de draft do site). Toda chamada Beds24 passa por `src/lib/beds24/`, módulo `server-only`, com um client único que consulta um circuit breaker de créditos antes de cada requisição.
+**Architecture:** Next.js (App Router) roda no Cloudflare Workers via vinext (gate aprovado no Task 3). Conteúdo vem do Sanity (Studio hospedado em `*.sanity.studio`, Presentation tool apontando para a rota de draft do site). Toda chamada Beds24 passa por `src/lib/beds24/`, módulo `server-only`, com um client único que consulta um circuit breaker de créditos antes de cada requisição.
 
-**Tech Stack:** Next.js + TypeScript, vinext ou `@opennextjs/cloudflare` + `wrangler`, Sanity (`sanity`, `next-sanity`), Vitest + Testing Library, Playwright, Tailwind CSS.
+**Tech Stack:** Next.js + TypeScript, vinext (`@vinext/cloudflare`) + `wrangler`, Sanity (`sanity`, `next-sanity`), Vitest + Testing Library, Playwright, Tailwind CSS.
 
 **Spec:** `docs/superpowers/specs/2026-10-01-site-v2-design.md` (até o Task 1, está em
 `/private/tmp/claude-501/-Users-brunabeppler-Projects-copilotositio/f19baa7c-1817-460f-a12a-eef43d5a0960/scratchpad/2026-10-01-site-v2-design.md`).
@@ -54,8 +54,8 @@ CLAUDE.md                         regras do projeto V2 (substitui o antigo)
 AGENTS.md                         aponta para CLAUDE.md
 vercel.json                       desliga build da Vercel na branch v2
 .env.example                      variáveis sem valores
-wrangler.jsonc                    config do Worker
-(config do adaptador: vite.config.ts se vinext, open-next.config.ts se OpenNext)
+cloudflare.config.ts              config do Worker (vinext)
+vite.config.ts                    config do Vite / plugins Cloudflare e RSC (vinext)
 next.config.ts
 vitest.config.ts
 playwright.config.ts
@@ -456,106 +456,27 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Pré-requisito (ação da proprietária):** acesso à conta Cloudflare onde está a zona `sitiorecantoazul.com.br`.
 
-**Decisão a tomar neste task:** Cloudflare recomenda vinext para projetos novos. Usar vinext se passar no gate abaixo;
-se houver incompatibilidade concreta com `next-sanity`, Draft Mode ou Visual Editing, usar OpenNext
-(`@opennextjs/cloudflare`) e registrar o motivo. Cache: arquitetura mínima necessária; Durable Objects só se a
-estratégia adotada exigir.
+**Decisão tomada neste task:** `vinext` APROVADO.
+- O gate remoto no Cloudflare Workers passou em 100% dos 8 critérios (draft mode, overlays, live preview no Presentation tool, isolamento de rascunhos, visitante anônimo e secrets em `bindings.secret()`).
+- O OpenNext foi descartado por exceder o limite de 10 ms do Workers Free (12–14,5 ms p50, máx 105 ms) e por embutir `.env` nos bundles compilados (`.open-next/cloudflare/next-env.mjs`).
+- O vinext consome apenas **2,00 ms p50** e **3,00 ms p95/máx** (80% abaixo do teto de 10 ms), com bundle de **560,20 KiB gzip** (3× menor que OpenNext).
+- Cache: arquitetura mínima sem `workers-cache`, sem Cache Components, sem R2, sem KV e sem Durable Objects.
 
 **Files:**
-- Create: `docs/infra-medicoes.md` (inclui seção "Decisão de hospedagem")
-- Create (conforme o vencedor): config do adaptador (vinext: `vite.config.ts` + `wrangler.jsonc`; OpenNext: `open-next.config.ts` + `wrangler.jsonc`)
-- Modify: `package.json`, `next.config.ts` (se OpenNext)
+- Create: `docs/infra-medicoes.md` (decisão e tabela comparativa consolidada)
+- Create: `cloudflare.config.ts`, `vite.config.ts`
+- Modify: `package.json`, `next.config.ts`, `eslint.config.mjs`, `vitest.config.ts`, `.gitignore`
+- Delete: `open-next.config.ts`, `wrangler.jsonc`
 
-**Interfaces:** nenhuma de código. Produz a decisão registrada e os scripts `preview` e `deploy` em `package.json`.
+**Interfaces:** Scripts `build:vinext`, `preview` e `deploy` via `vinext-cloudflare` em `package.json`.
 
-- [ ] **Step 1: Ler a documentação atual**
-
-Ler a página de Next.js no Cloudflare Workers (framework guide) e o README do vinext. Anotar em
-`docs/infra-medicoes.md`: comando de setup, suporte declarado a App Router, Route Handlers, `draftMode()`,
-`revalidateTag`/ISR, `next/image`, e como configurar cache.
-
-- [ ] **Step 2: Gate vinext em branch descartável**
-
-```bash
-git checkout -b spike/vinext-gate
-```
-Aplicar o setup oficial do vinext no app do Task 2 e adicionar o mínimo do Task 5 necessário para o gate
-(`next-sanity` com `defineLive`, rota `/api/draft-mode/enable` com `defineEnableDraftMode`, `<VisualEditing />` e
-`<SanityLive />` no layout, Home lendo um documento `page`). Usar o projeto Sanity do Task 4 se já existir;
-senão criar só um documento de teste.
-
-Critérios (todos precisam passar, local e em `wrangler deploy` para `*.workers.dev`):
-1. `build` sem erro e Worker abaixo de 3 MiB comprimido.
-2. Home renderiza conteúdo do Sanity.
-3. `/api/draft-mode/enable` liga draft mode (cookie `__prerender_bypass` presente) e redireciona.
-4. Presentation tool abre o preview, mostra overlays de clique-para-editar e atualiza rascunho ao vivo.
-5. Visitante anônimo não vê rascunho.
-6. Publicar no Sanity atualiza a página pública em segundos (revalidação por tag ou mecanismo equivalente).
-7. Rota server-only consegue ler secret do Worker sem expor ao cliente.
-
-Registrar resultado de cada critério em `docs/infra-medicoes.md`.
-
-- [ ] **Step 3: Decidir**
-
-- Todos passaram: vinext. Mesclar o setup na `v2` (`git checkout v2 && git merge --squash spike/vinext-gate`, mantendo só a
-  configuração de hospedagem; o código de conteúdo é reescrito com TDD no Task 5).
-- Algum falhou: OpenNext. Registrar o critério que falhou, o erro observado e a versão testada. Aplicar:
-  ```bash
-  npm i @opennextjs/cloudflare@latest && npm i -D wrangler@latest
-  ```
-  `open-next.config.ts` inicial, sem cache extra:
-  ```ts
-  import { defineCloudflareConfig } from "@opennextjs/cloudflare";
-
-  export default defineCloudflareConfig();
-  ```
-  Scripts em `package.json`:
-  ```json
-  "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-  "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
-  ```
-  Em `next.config.ts`: import `initOpenNextCloudflareForDev` no topo e chamada `initOpenNextCloudflareForDev();` na última linha.
-- Apagar a branch do spike depois: `git branch -D spike/vinext-gate` (nunca foi enviada ao remote).
-
-- [ ] **Step 4: Cache mínimo**
-
-Ordem de escolha, parando na primeira que atende os critérios 6 do gate e o limite de CPU do Free:
-1. Padrão do adaptador escolhido + CDN do Sanity (`useCdn: true`), sem storage extra.
-2. Cache incremental persistente do adaptador (OpenNext: R2 incremental cache + D1 tag cache; vinext: o equivalente
-   documentado), sem fila em Durable Object.
-3. Durable Objects só se a documentação do adaptador exigir para a revalidação funcionar.
-
-Registrar em `docs/infra-medicoes.md` qual opção ficou e por quê. Criar bucket/banco só para a opção adotada.
-
-- [ ] **Step 5: Conectar Workers Builds (dashboard, com a proprietária)**
-
-1. Cloudflare → Workers & Pages → Create → Import a repository → `zeloalabs/SITESITIORECANTOAZUL`.
-2. Production branch: `v2`. Durante o desenvolvimento, "produção" do Worker é só a URL `*.workers.dev`; nenhum domínio é anexado.
-3. Build e deploy commands: os do adaptador escolhido.
-4. Non-production branch builds: ligado.
-5. Variáveis: `NEXT_PUBLIC_SANITY_*`, `NEXT_PUBLIC_SITE_URL`, `PRICES_ENABLED=false`. Secrets entram nos Tasks 5 e 8.
-
-- [ ] **Step 6: Commit, push e conferir preview**
-
-```bash
-git add -A
-git commit -m "chore: deploy V2 preview to Cloudflare Workers
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
-git push
-```
-
-Expected: build verde; `*.workers.dev` responde 200; `https://sitiorecantoazul.com.br` continua na Vercel
-(`curl -sI https://sitiorecantoazul.com.br | grep -i server` → `Vercel`).
-
-- [ ] **Step 7: Registrar medição**
-
-Tabela em `docs/infra-medicoes.md`:
-```markdown
-| Data | Adaptador | Rota | Cache | CPU p50 | CPU p99 | Observação |
-|---|---|---|---|---|---|---|
-```
-Preencher com Workers → Observability → CPU time para `/` após ~20 acessos.
+- [x] **Step 1: Ler a documentação atual** (concluído: documentado em `docs/infra-medicoes.md`).
+- [x] **Step 2: Gate vinext em branch descartável / Worker de spike** (concluído: validado em `sitio-recanto-azul-vinext-spike.zeloapms.workers.dev` com 8/8 critérios aprovados).
+- [x] **Step 3: Decidir** (concluído: vinext aprovado unanimemente por CPU 2,0 ms vs 14,5 ms e segurança de secrets).
+- [x] **Step 4: Cache mínimo** (concluído: sem `workers-cache`, sem Cache Components, sem R2/KV/DOs adicionais).
+- [x] **Step 5: Conectar / provisionar preview Worker** (concluído: worker `sitio-recanto-azul-site` criado e configurado com secrets `SANITY_API_READ_TOKEN` e `SANITY_API_BROWSER_TOKEN`).
+- [x] **Step 6: Commit, push e conferir preview** (concluído: deploy em `sitio-recanto-azul-site.zeloapms.workers.dev` respondendo HTTP 200).
+- [x] **Step 7: Registrar medição** (concluído: n=20 acessos medidos via `wrangler tail` / `/tmp/measure_cpu.py`: p50 2,00 ms, p95 3,00 ms, max 3,00 ms).
 
 ---
 

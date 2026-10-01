@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     // Studio tem node_modules e lint próprios; artefatos de build do adaptador.
     "studio/**",
     ".open-next/**",
+    ".cloudflare/**",
     "dist/**",
     "test-results/**",
     "playwright-report/**",

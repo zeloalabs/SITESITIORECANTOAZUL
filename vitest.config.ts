@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src"),
-      "server-only": path.resolve(__dirname, "vitest.server-only-stub.ts"),
+      "@": path.resolve(import.meta.dirname, "src"),
+      "server-only": path.resolve(import.meta.dirname, "vitest.server-only-stub.ts"),
     },
   },
   test: {

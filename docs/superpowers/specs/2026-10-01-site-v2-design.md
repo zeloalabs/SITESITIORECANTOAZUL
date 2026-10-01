@@ -55,7 +55,7 @@ O site não tem checkout próprio nem iframe na V1: ele mostra, convence e leva 
 | Camada | Escolha | Motivo |
 |---|---|---|
 | Framework | Next.js (App Router) + TypeScript | Ecossistema, SSG/ISR, integração Sanity |
-| Hospedagem | Cloudflare Workers via OpenNext | Uso comercial permitido, CDN global, DNS já no Cloudflare |
+| Hospedagem | Cloudflare Workers via vinext | Uso comercial permitido, CDN global, DNS já no Cloudflare, CPU p50 de 2,0 ms (80% abaixo do limite Free de 10 ms), bundle ~560 KiB gzip |
 | CMS | Sanity (plano free) | Edição visual (Presentation tool) inclusa no free, 20 usuários, 100 GB de assets |
 | Imagens | CDN de imagens do Sanity | AVIF/WebP, recorte com ponto focal, tamanhos responsivos, sem custo de otimização no host |
 | Movimento | Motion (motion.dev) | Scroll hooks e `layoutId` para os efeitos escolhidos |
@@ -66,7 +66,7 @@ O site não tem checkout próprio nem iframe na V1: ele mostra, convence e leva 
 
 Plano Cloudflare: começar no Workers Free. Limites relevantes do Free: 10 ms de CPU por requisição, 100 mil
 requisições/dia, 50 subrequests por requisição, 5 Cron Triggers. Medir CPU e limites no preview (páginas públicas,
-rota de draft do editor, `/api/quote`, cron). Migrar para Workers Paid (US$ 5/mês) só se alguma medição exceder o Free. Fallback de hospedagem: Vercel Pro (US$ 20/mês), só se OpenNext/Cloudflare mostrar bloqueio técnico real.
+rota de draft do editor, `/api/quote`, cron). Migrar para Workers Paid (US$ 5/mês) só se alguma medição exceder o Free. Fallback de hospedagem: Vercel Pro (US$ 20/mês), só se vinext/Cloudflare mostrar bloqueio técnico real.
 
 Descartados: Storyblok (free com 1–2 usuários, próximo plano US$ 99/mês); Payload self-hosted
 (edição visual menos madura, exige banco e storage próprios); Vercel Hobby (termos proíbem uso comercial).
