@@ -6,8 +6,8 @@ Limites do Workers Free: 10 ms de CPU por requisição, 100 mil requisições/di
 ## Decisão de hospedagem (Task 3, 2026-10-01): OpenNext
 
 Adaptador escolhido: `@opennextjs/cloudflare` 1.20.7 (Wrangler 4.145.0, Next 16.3.8, Node 24).
-vinext reprovou no gate por incompatibilidade concreta no draft mode com o único cache mínimo disponível
-(detalhes abaixo). Os dois spikes ficaram em branches locais (`spike/vinext-gate`, `spike/opennext-gate`),
+vinext reprovou no gate: draft mode entra em loop com o adaptador de cache escolhido (`workers-cache`) e o
+toolchain só funciona em beta (detalhes abaixo). Os dois spikes ficaram em branches locais (`spike/vinext-gate`, `spike/opennext-gate`),
 nunca enviadas ao GitHub.
 
 ### Modo de integração Sanity: sem Cache Components
@@ -29,7 +29,7 @@ beta v2 funciona. Toolchain inteiro em beta.
 |---|---|---|---|
 | 1 | Build, Worker < 3 MiB | passa (~635 KiB gzip) | passa |
 | 2 | Home lê Sanity | passa | passa |
-| 3 | `/api/draft-mode/enable` | **falha** com o adaptador `workers-cache` (cache mínimo do vinext): "TypeError: Too many redirects", loop em `/?sanity-preview-perspective=drafts`, requisição interna com `__vinext_cache_key`. Sem o adaptador: 307 + cookie | **falha** igual com o adaptador; sem adaptador não há cache nenhum |
+| 3 | `/api/draft-mode/enable` | **falha** com o adaptador escolhido (`workers-cache`; o `vinext init` também oferece response-store, static-assets, data-cache e none, não testados): "TypeError: Too many redirects", loop em `/?sanity-preview-perspective=drafts`, requisição interna com `__vinext_cache_key`. Sem o adaptador: 307 + cookie | **falha** igual com o adaptador; sem adaptador não há cache nenhum |
 | 4 | Presentation: overlays + rascunho ao vivo | **falha**: `'use cache'` devolve rascunho antigo em draft mode (Next documenta que em draft mode funções em cache são reexecutadas) | inconclusivo: o Presentation reaproveitou cookie de outro build e não chamou o enable |
 | 5 | Anônimo não vê rascunho | passa | passa |
 | 6 | Publicar atualiza público | passa (com visitante conectado) | não medido |
@@ -37,7 +37,12 @@ beta v2 funciona. Toolchain inteiro em beta.
 
 Também: em `vite dev`, "Invalid hook call" no `SanityLive` (duas cópias de React no otimizador do Vite).
 
-### Gate OpenNext — aprovado (sem Cache Components)
+Comparação em pé de igualdade: o OpenNext também roda sem cache hoje. Sem nenhum adaptador de cache, o vinext
+passou no critério 3. Nessa condição, o que sobra contra o vinext é o critério 4 inconclusivo no modo final e o
+toolchain só em beta. A CPU do vinext não foi medida (bundle ~635 KiB gzip, cerca de um terço do OpenNext com
+next-sanity).
+
+### Gate OpenNext — aprovado localmente (sem Cache Components); critérios 3 e 4 pendentes no deploy
 
 | # | Critério | Resultado | Onde |
 |---|---|---|---|
@@ -46,7 +51,7 @@ Também: em `vite dev`, "Invalid hook call" no `SanityLive` (duas cópias de Rea
 | 3 | `/api/draft-mode/enable` | passa: 401 com secret inválido; Presentation liga draft mode | `wrangler dev` |
 | 4 | Presentation: overlays + rascunho ao vivo | passa: overlay, clique abre o campo, rascunho atualiza no preview sem recarregar | `wrangler dev` |
 | 5 | Anônimo não vê rascunho | passa | `wrangler dev` |
-| 6 | Publicar atualiza público | passa: publicado sem nenhum visitante conectado, requisição nova mostrou o título novo em ≤ 5 s | `*.workers.dev` |
+| 6 | Publicar atualiza público | passa: publicado sem nenhum visitante conectado, requisição nova mostrou o título novo em ≤ 5 s. Só porque nada é cacheado (toda requisição renderiza e busca no Sanity); se cache for adicionado, refazer este teste e usar webhook/Live para revalidar | `*.workers.dev` |
 | 7 | Secret só no servidor | passa: tokens como Worker secrets; 0 ocorrências em `.open-next/` | deploy |
 
 Pendente no `*.workers.dev`: critérios 3 e 4 (precisam da origem `https://sitio-recanto-azul-site.zeloapms.workers.dev`
@@ -70,5 +75,10 @@ Sem cache incremental, o Worker renderiza a página a cada requisição.
 | 2026-10-01 | OpenNext | `/` com Sanity (gate) | nenhum | 14,5 ms | 105 ms | 47,5 ms | n=12; renderiza a cada requisição |
 | 2026-10-01 | OpenNext | `/` base estática (v2) | nenhum | 13,0 ms | 22 ms | 17 ms | n=14; sem nenhum dado |
 
-Conclusão provisória: o OpenNext passa de 10 ms de CPU até numa página estática sem dados. Nenhuma requisição
-falhou (outcome `ok`), mas a medição já excede o limite do Free. Decisão de plano/cache fica com a proprietária.
+Contexto: cada amostra tem 12–14 requisições, logo após um deploy; todas com outcome `ok`.
+
+Conclusão provisória: acima do limite nominal de 10 ms, sem falhas observadas. O custo vem do runtime do
+adaptador (a página base sem dados já mede 13 ms), não do Sanity. Cache incremental (R2 + D1) ainda passa pelo
+Worker, então não está provado que baixe a CPU. Opções: cache do HTML na borda à frente do Worker (exige hostname
+na zona, ou seja, DNS, decisão de lançamento), Workers Paid (US$ 5/mês), ou medir a CPU do vinext. Decisão da
+proprietária.
