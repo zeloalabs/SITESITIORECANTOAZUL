@@ -151,3 +151,26 @@ medir a CPU real das rotas Beds24.
 2. `compatibilityDate` `2026-10-01` → `2026-09-28` (workerd local só suporta até 2026-09-28).
 3. `npm run dev` agora roda vinext (`vite dev --port 3000`, lê `.dev.vars`); `next dev` ficou em `dev:next`.
 4. Entrada do Worker própria (`src/worker/index.ts`) em vez de `vinext/server/fetch-handler` direto.
+
+## Integração Beds24 server-side (Task 6, 2026-10-01) — medições de CPU da rota Beds24
+
+### Arquitetura e Circuit Breaker
+- Client server-only em `src/lib/beds24/client.ts` com proteção via `CreditBreaker` em `src/lib/beds24/breaker.ts`.
+- Regras do breaker:
+  - `x-five-min-limit-remaining < 20`: abre imediatamente o circuito (reserva mínima de 20 créditos mantida).
+  - HTTP 429: abre imediatamente o circuito.
+  - Respeita `x-five-min-limit-resets-in` para definir tempo de reabertura (fallback de 5 minutos se ausente).
+  - Circuito aberto: chamadas subsequentes retornam `breaker_open` sem tocar na rede (`fetch` pulado).
+- Tratamento de erros: timeout (4s abort), erro de rede (`fetch` exception mapeado para `network`), resposta inválida/`success: false` mapeado para `api_error`, 401/403 mapeado para `auth`.
+- Rota API server-side: `src/app/api/beds24/route.ts` expõe endpoint dinâmico com `cache-control: private, no-store`.
+  - Bypassa o Workers Cache público (`toPublicCacheRequest` descarta caminhos `/api/*`).
+  - Sem token real configurado (ação pendente da proprietária no Task 8), responde `401 {"ok":false,"error":"auth"}` de forma imediata e segura, sem vazar segredos nem dados externos.
+
+### Medições de CPU (preview `sitio-recanto-azul-site`, `wrangler tail`)
+
+| Caso | n | CPU p50 | CPU p95 | CPU máx | Wall p50 | Observação |
+|---|---|---|---|---|---|---|
+| `/api/beds24` (1ª rodada / cold start) | 11 | 3,00 ms | 5,00 ms | 6,00 ms | 3,00 ms | Sem token real; fallback auth seguro; isolate inicial |
+| `/api/beds24` (2ª rodada / warm) | 13 | 2,00 ms | 2,40 ms | 3,00 ms | 2,00 ms | Isolate aquecido; execução rápida e estável |
+
+Leitura: Ambas as medições (cold p50 3,00 ms / máx 6,00 ms e warm p50 2,00 ms / máx 3,00 ms) operam com folga substancial abaixo do limite de 10 ms do Workers Free. O gateway vinext despacha rotas de API sem overhead de renderização React, mantendo a CPU entre 2–3 ms em regime aquecido.

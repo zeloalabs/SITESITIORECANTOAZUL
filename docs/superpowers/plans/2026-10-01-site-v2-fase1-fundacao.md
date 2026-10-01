@@ -1073,7 +1073,7 @@ export function createBeds24Client(opts: {
 }): Beds24Client;
 ```
 
-- [ ] **Step 1: Testes que falham do breaker**
+- [x] **Step 1: Testes que falham do breaker**
 
 `src/lib/beds24/breaker.test.ts`:
 ```ts
@@ -1158,12 +1158,12 @@ describe("CreditBreaker", () => {
 });
 ```
 
-- [ ] **Step 2: Rodar e ver falhar**
+- [x] **Step 2: Rodar e ver falhar**
 
 Run: `npx vitest run src/lib/beds24/breaker.test.ts`
 Expected: FAIL, módulo não encontrado.
 
-- [ ] **Step 3: Implementar tipos e breaker**
+- [x] **Step 3: Implementar tipos e breaker**
 
 `src/lib/beds24/types.ts`:
 ```ts
@@ -1231,12 +1231,12 @@ export class CreditBreaker {
 }
 ```
 
-- [ ] **Step 4: Rodar e ver passar**
+- [x] **Step 4: Rodar e ver passar**
 
 Run: `npx vitest run src/lib/beds24/breaker.test.ts`
 Expected: PASS (8 testes).
 
-- [ ] **Step 5: Testes que falham do client**
+- [x] **Step 5: Testes que falham do client**
 
 `src/lib/beds24/client.test.ts`:
 ```ts
@@ -1329,12 +1329,12 @@ describe("beds24 client", () => {
 });
 ```
 
-- [ ] **Step 6: Rodar e ver falhar**
+- [x] **Step 6: Rodar e ver falhar**
 
 Run: `npx vitest run src/lib/beds24/client.test.ts`
 Expected: FAIL, módulo não encontrado.
 
-- [ ] **Step 7: Implementar client**
+- [x] **Step 7: Implementar client**
 
 `src/lib/beds24/client.ts`:
 ```ts
@@ -1418,7 +1418,7 @@ export function createBeds24Client(opts: {
 }
 ```
 
-- [ ] **Step 8: Rodar e ver passar**
+- [x] **Step 8: Rodar e ver passar**
 
 Run: `npx vitest run src/lib/beds24/`
 Expected: PASS (17 testes).

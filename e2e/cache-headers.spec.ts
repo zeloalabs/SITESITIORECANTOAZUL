@@ -18,3 +18,10 @@ test("api routes are never edge-cacheable", async ({ request }) => {
   expect(res.status()).toBe(401);
   expect(res.headers()["cdn-cache-control"]).toBeUndefined();
 });
+
+test("beds24 api route is never edge-cacheable", async ({ request }) => {
+  const res = await request.get("/api/beds24");
+  expect(res.status()).toBe(401);
+  expect(res.headers()["cdn-cache-control"]).toBeUndefined();
+  expect(res.headers()["cache-control"]).toBe("private, no-store");
+});
