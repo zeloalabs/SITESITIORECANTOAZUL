@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect } from "vitest";
-import { isPublicCacheable, withPublicCacheHeaders, withPrivateNoStore, PUBLIC_CACHE_TAG } from "./cache-policy";
+import { isPublicCacheable, toPublicCacheRequest, withPublicCacheHeaders, withPrivateNoStore, PUBLIC_CACHE_TAG } from "./cache-policy";
 
 const req = (path: string, init: RequestInit = {}) => new Request(`https://example.test${path}`, init);
 
@@ -33,6 +33,44 @@ describe("isPublicCacheable", () => {
     expect(isPublicCacheable(req("/", { headers: { authorization: "Bearer x" } }))).toBe(false);
     expect(isPublicCacheable(req("/", { headers: { rsc: "1" } }))).toBe(false);
     expect(isPublicCacheable(req("/?_rsc=abc"))).toBe(false);
+  });
+
+  it("never caches .rsc payload paths", () => {
+    expect(isPublicCacheable(req("/index.rsc"))).toBe(false);
+    expect(isPublicCacheable(req("/acomodacoes.rsc"))).toBe(false);
+  });
+
+  it("bypasses the cache for any non-tracking query parameter", () => {
+    expect(isPublicCacheable(req("/?q=1"))).toBe(false);
+    expect(isPublicCacheable(req("/?utm_source=ig&checkin=2026-12-01"))).toBe(false);
+  });
+
+  it("accepts URLs whose only parameters are tracking parameters", () => {
+    expect(isPublicCacheable(req("/?utm_source=ig&utm_campaign=x&gclid=1&fbclid=2"))).toBe(true);
+  });
+});
+
+describe("toPublicCacheRequest", () => {
+  it("strips utm_*, gclid and fbclid so they never reach the render or the cache key", () => {
+    const out = toPublicCacheRequest(req("/acomodacoes?utm_source=ig&utm_medium=bio&gclid=G&fbclid=F"));
+    expect(out).not.toBeNull();
+    expect(out!.url).toBe("https://example.test/acomodacoes");
+  });
+
+  it("keeps method and headers", () => {
+    const out = toPublicCacheRequest(req("/?fbclid=F", { method: "HEAD", headers: { "accept-language": "pt-BR" } }));
+    expect(out!.method).toBe("HEAD");
+    expect(out!.headers.get("accept-language")).toBe("pt-BR");
+  });
+
+  it("returns the same URL when there is nothing to strip", () => {
+    expect(toPublicCacheRequest(req("/"))!.url).toBe("https://example.test/");
+  });
+
+  it("returns null for non-cacheable requests", () => {
+    expect(toPublicCacheRequest(req("/?q=1"))).toBeNull();
+    expect(toPublicCacheRequest(req("/api/x"))).toBeNull();
+    expect(toPublicCacheRequest(req("/", { headers: { cookie: "__prerender_bypass=1" } }))).toBeNull();
   });
 });
 

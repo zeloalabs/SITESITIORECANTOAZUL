@@ -1,14 +1,16 @@
 // Entrada do Worker. Gateway (default, sem Workers Cache) + `PublicPages` (com Workers Cache).
 //
-// - Páginas públicas iguais para todos → `ctx.exports.PublicPages` (cache na borda, TTL 60 s, tag `public-pages`).
-//   Em HIT o Worker nem roda.
-// - Draft Mode, Presentation, `/api/*` (draft, webhook, Beds24) e qualquer request personalizado → vinext direto,
-//   sem cache, com `Cache-Control: private, no-store` quando for página.
+// - Páginas públicas iguais para todos → `ctx.exports.PublicPages` (cache na borda, TTL 60 s, tag `public-pages`),
+//   com `utm_*`/`gclid`/`fbclid` removidos da Request repassada (a URL do navegador não muda).
+//   Em HIT o gateway roda (decisão + loopback, ~0 ms de CPU), mas o `PublicPages` e o render do vinext não.
+// - Draft Mode, Presentation, `/api/*` (draft, webhook, Beds24), `.rsc`/`RSC`, `Authorization`, parâmetros
+//   desconhecidos e qualquer request personalizado → vinext direto no gateway, sem cache, com
+//   `Cache-Control: private, no-store` quando for página. Esse caminho sempre gasta CPU de render.
 // - `POST /api/sanity-webhook` (assinado) → purge da tag pública via RPC no `PublicPages`
 //   (o purge é por entrypoint, então precisa rodar dentro dele).
 import { WorkerEntrypoint } from "cloudflare:workers";
 import vinext from "vinext/server/fetch-handler";
-import { isPublicCacheable, withPrivateNoStore, withPublicCacheHeaders, PUBLIC_CACHE_TAG } from "./cache-policy";
+import { toPublicCacheRequest, withPrivateNoStore, withPublicCacheHeaders, PUBLIC_CACHE_TAG } from "./cache-policy";
 import { handleSanityWebhook, SANITY_WEBHOOK_PATH } from "./sanity-webhook";
 
 type WorkerEnv = Env & { SANITY_WEBHOOK_SECRET?: string };
@@ -37,7 +39,8 @@ export default {
       return handleSanityWebhook(request, env.SANITY_WEBHOOK_SECRET, () => publicPages.purgePublicCache());
     }
 
-    if (isPublicCacheable(request)) return publicPages.fetch(request);
+    const publicRequest = toPublicCacheRequest(request);
+    if (publicRequest) return publicPages.fetch(publicRequest);
 
     const response = await handler.fetch(request, env, ctx);
     if (pathname === "/api" || pathname.startsWith("/api/")) return response;

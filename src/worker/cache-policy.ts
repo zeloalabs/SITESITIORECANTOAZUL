@@ -12,13 +12,34 @@ function hasDraftCookie(request: Request): boolean {
   return cookie.split(";").some((part) => DRAFT_COOKIES.includes(part.split("=")[0]!.trim()));
 }
 
-export function isPublicCacheable(request: Request): boolean {
-  if (request.method !== "GET" && request.method !== "HEAD") return false;
+// Parâmetros de rastreio: removidos antes do render e da cache key (a URL do navegador não muda).
+// Consequência: em página cacheada, `useSearchParams` não vê esses parâmetros. Analytics/rastreio leem
+// `window.location`; parâmetro que a UI precisa não pode ser de rastreio (assim faz BYPASS).
+function isTrackingParam(name: string): boolean {
+  return name.startsWith("utm_") || name === "gclid" || name === "fbclid";
+}
+
+/**
+ * Request para o `PublicPages`, sem parâmetros de rastreio, ou `null` se a requisição não pode usar o cache
+ * público. Qualquer parâmetro que não seja de rastreio faz BYPASS: nunca compartilha entrada de cache.
+ */
+export function toPublicCacheRequest(request: Request): Request | null {
+  if (request.method !== "GET" && request.method !== "HEAD") return null;
   const url = new URL(request.url);
-  if (url.pathname === "/api" || url.pathname.startsWith("/api/")) return false;
-  if (url.searchParams.has("_rsc") || request.headers.has("rsc")) return false;
-  if (request.headers.has("authorization")) return false;
-  return !hasDraftCookie(request);
+  if (url.pathname === "/api" || url.pathname.startsWith("/api/")) return null;
+  if (url.pathname.endsWith(".rsc") || request.headers.has("rsc")) return null;
+  if (request.headers.has("authorization")) return null;
+  if (hasDraftCookie(request)) return null;
+
+  const names = [...new Set(url.searchParams.keys())];
+  if (names.some((name) => !isTrackingParam(name))) return null;
+  if (names.length === 0) return request;
+  url.search = "";
+  return new Request(url, request);
+}
+
+export function isPublicCacheable(request: Request): boolean {
+  return toPublicCacheRequest(request) !== null;
 }
 
 export function withPrivateNoStore(response: Response): Response {

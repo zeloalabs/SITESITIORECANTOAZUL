@@ -125,14 +125,26 @@ Limite desta verificação: clique → campo foi provado pelo destino do stega (
 render em draft mode. A atualização ao vivo dentro do iframe do Presentation não foi observada visualmente nesta sessão.
 
 ### Pontos de atenção para a Fase 2
-- `<SanityLive />` no público: a cada evento de publicação, a action responde `"refresh"` e o navegador faz
-  `router.refresh()` (requisição RSC, fora do cache) em cada aba aberta. Proposta pendente de decisão: renderizar
-  `<SanityLive />` só em draft mode; visitante passa a ver novo conteúdo ao recarregar (purge + TTL 60 s).
-- Navegação/prefetch RSC (`RSC`/`_rsc`) sempre pula o cache (render no gateway).
-- Parâmetros de rastreio únicos (`fbclid`, `gclid`, `utm_*`) criam chave de cache nova por link; normalizar no gateway.
+- ~~`<SanityLive />` no público~~ **Resolvido (Revisão 1):** `<SanityLive />` só em Draft Mode. Visitante vê conteúdo
+  novo ao recarregar (purge pelo webhook + TTL 60 s).
+- ~~Parâmetros de rastreio~~ **Resolvido (Revisão 1):** `utm_*`, `gclid` e `fbclid` são removidos da Request repassada
+  ao `PublicPages` (fora do render e da cache key); a URL do navegador fica intacta. Qualquer outro parâmetro faz
+  BYPASS. Verificado no preview: `/?utm_source=AAA&gclid=…` MISS, `/?utm_source=BBB&fbclid=…` HIT, `/` HIT, nenhum
+  corpo contém parâmetro de outro visitante; `/?q=1` → `private, no-store`, sem `cf-cache-status`.
+  - Consequência: em página cacheada, `useSearchParams` não vê parâmetros de rastreio (sem erro de hidratação).
+    **Regra:** analytics/rastreio leem `window.location`; parâmetro que a UI precisa não pode ser de rastreio.
+    Coberto por e2e (`e2e/tracking-params.spec.ts`, fixture `/e2e/search-params`, 404 em produção).
+- ~~`.rsc`~~ **Resolvido (Revisão 1):** caminhos `*.rsc`, header `RSC` e `_rsc` sempre fazem BYPASS.
+- Navegação/prefetch RSC sempre renderiza no gateway (sem cache).
 - Com Workers Cache ligado, toda requisição conta na cota de 100 mil/dia (inclusive HIT e a chamada loopback ao
   `PublicPages`); assets estáticos também passam a contar, segundo a documentação.
 - HEAD em chave fria seguido de GET: verificado, GET recebe HIT com corpo completo.
+
+### Risco de CPU por requisição forjada (monitorar; sem rate limiting por enquanto)
+Qualquer pessoa pode forçar render sem cache no gateway (≈ 8 ms aquecido, ≥ 49 ms frio) com:
+`Authorization` qualquer, cookie `__prerender_bypass`/`sanity-preview-perspective` forjado, header `RSC`/caminho
+`.rsc`, ou parâmetro desconhecido (`/?x=<aleatório>`). Monitorar CPU e erros 1102 no painel do Worker. Na Task 6,
+medir a CPU real das rotas Beds24.
 
 ### Desvios do plano
 1. Home dinâmica na origem + Workers Cache na borda, não estática/ISR (Step 6b).
