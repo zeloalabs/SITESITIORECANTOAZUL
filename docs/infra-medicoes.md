@@ -11,7 +11,8 @@ Adaptador escolhido: `vinext` 1.0.0 (`@vinext/cloudflare` 1.0.0, `@cloudflare/vi
 
 1. **CPU e limites Workers Free (10 ms):**
    - O OpenNext opera consistentemente **acima do limite de 10 ms do Workers Free**: 12,0 ms p50 na base estática, 14,5 ms p50 com Sanity, p95 de ~95 ms e picos de até 105 ms. Isso exigiria migração imediata para o plano Workers Paid (US$ 5/mês) para evitar erros e cortes de execução.
-   - O vinext opera com **2,00 ms p50**, **3,00 ms p95** e **3,00 ms máx** (80% de folga livre abaixo do teto de 10 ms).
+   - O vinext mediu **2,00 ms p50**, **3,00 ms p95** e **3,00 ms máx** — mas eram HITs do cache em memória do vinext (ver Task 5).
+     Render real aquecido do vinext: **~7–8 ms p50** (Task 5), ainda abaixo do OpenNext (14,5 ms p50).
 2. **Tamanho do Worker:**
    - O bundle vinext com Sanity tem **560,20 KiB gzip** (1.869,89 KiB total), cerca de **3× menor** que o OpenNext (1.695 KiB gzip / ~5,5 MiB descompactado).
 3. **Segurança de secrets:**
@@ -19,7 +20,7 @@ Adaptador escolhido: `vinext` 1.0.0 (`@vinext/cloudflare` 1.0.0, `@cloudflare/vi
    - O vinext utiliza estritamente `bindings.secret()` do `@vinext/cloudflare` / Cloudflare Workers, garantindo zero vazamento de secrets em bundles e HTML.
 4. **Arquitetura mínima:**
    - Adotada arquitetura sem `workers-cache`, sem Cache Components (`cacheComponents: false`), sem R2, sem KV e sem Durable Objects.
-   - Cada requisição do site renderiza via SSR/RSC consumindo diretamente do Content Lake / CDN do Sanity, garantindo frescor imediato de dados com CPU ínfima (2 ms).
+   - (Corrigido no Task 5) Os 2 ms vinham do cache em memória do vinext, não de render por requisição. Ver "Workers Cache (Task 5)".
 
 ### Gate vinext — 100% Aprovado no Worker Remoto
 
@@ -53,7 +54,7 @@ Testado e validado em `https://sitio-recanto-azul-vinext-spike.zeloapms.workers.
 | 2026-10-01 | OpenNext | `sitio-recanto-azul-site` | `/` base estática (v2) | nenhum | 12,0 ms | 17,6 ms | 19,0 ms | 14,0 ms | 960,9 KiB | n=15; estoura limite Free (10 ms) |
 | 2026-10-01 | vinext | `sitio-recanto-azul-vinext-spike` | `/` base estática (spike) | nenhum | 2,0 ms | 3,0 ms | 3,0 ms | 3,0 ms | 387,0 KiB | n=15; sem dados externos |
 | 2026-10-01 | vinext | `sitio-recanto-azul-vinext-spike` | `/` com Sanity (spike) | nenhum | 2,0 ms | 2,3 ms | 49,0 ms (cold) / 3,0 ms (warm) | 2,0 ms | 559,0 KiB | n=15; dados do Sanity em produção |
-| 2026-10-01 | vinext | `sitio-recanto-azul-site` | `/` com Sanity (v2 final) | nenhum | **2,00 ms** | **3,00 ms** | **3,00 ms** | **2,00 ms** | **560,20 KiB** | n=20; preview oficial v2, 80% folga Free |
+| 2026-10-01 | vinext | `sitio-recanto-azul-site` | `/` com Sanity (v2 final) | nenhum | **2,00 ms** | **3,00 ms** | **3,00 ms** | **2,00 ms** | **560,20 KiB** | n=20; **cache HIT em memória do vinext** (ver Task 5), não render real |
 
 Contexto das medições:
 - Coleta direta via `wrangler tail --format json` dos eventos de runtime do Cloudflare via script `/tmp/measure_cpu.py`.
@@ -122,6 +123,16 @@ migrar para Workers Paid.**
 
 Limite desta verificação: clique → campo foi provado pelo destino do stega (o mesmo que o overlay usa), e o draft por
 render em draft mode. A atualização ao vivo dentro do iframe do Presentation não foi observada visualmente nesta sessão.
+
+### Pontos de atenção para a Fase 2
+- `<SanityLive />` no público: a cada evento de publicação, a action responde `"refresh"` e o navegador faz
+  `router.refresh()` (requisição RSC, fora do cache) em cada aba aberta. Proposta pendente de decisão: renderizar
+  `<SanityLive />` só em draft mode; visitante passa a ver novo conteúdo ao recarregar (purge + TTL 60 s).
+- Navegação/prefetch RSC (`RSC`/`_rsc`) sempre pula o cache (render no gateway).
+- Parâmetros de rastreio únicos (`fbclid`, `gclid`, `utm_*`) criam chave de cache nova por link; normalizar no gateway.
+- Com Workers Cache ligado, toda requisição conta na cota de 100 mil/dia (inclusive HIT e a chamada loopback ao
+  `PublicPages`); assets estáticos também passam a contar, segundo a documentação.
+- HEAD em chave fria seguido de GET: verificado, GET recebe HIT com corpo completo.
 
 ### Desvios do plano
 1. Home dinâmica na origem + Workers Cache na borda, não estática/ISR (Step 6b).
