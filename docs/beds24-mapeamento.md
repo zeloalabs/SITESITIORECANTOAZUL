@@ -8,8 +8,8 @@ propertyId: 357738 (Sítio Recanto Azul)
 | Mirante | 737427 | Chalé Mirante | 4 | 2 |
 | Doce Recanto | 737430 | Chalé Doce Recanto | 4 | 2 |
 | Domo Estelar | 737429 | Domo Estelar | 4 | 2 |
-| Chalé para Grupos | 737435 | Chalé Grupos | 20 | (definir com a proprietária) |
-| Celeiro | 737433 | Celeiro Recanto | 11 | (definir com a proprietária) |
+| Celeiro | 737433 | Celeiro Recanto | 11 | 11 |
+| Chalé para Grupos | 737435 | Chalé Grupos | 20 | 6 |
 
 ## Formato observado da resposta `/properties` da Beds24 API V2
 
