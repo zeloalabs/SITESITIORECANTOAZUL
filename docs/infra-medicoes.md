@@ -193,3 +193,26 @@ Leitura:
 - O pico de CPU (27,00 ms) ocorre pontualmente na inicialização / TLS handshake do primeiro isolate.
 - O tempo de parede (Wall time) mediu **259,00 ms p50**, representando a latência de rede real de ida e volta até os servidores da Beds24.
 
+## Medição de CPU — Ativação de Draft Mode (`/api/draft-mode/enable`)
+
+| Caso | n | CPU p50 | CPU p95 | CPU máx | Wall p50 | Observação |
+|---|---|---|---|---|---|---|
+| `/api/draft-mode/enable` | 11 | **2,00 ms** | **3,00 ms** | **3,00 ms** | **3,00 ms** | Resposta 401 sem secret; sem render; execução direta |
+
+## Decisão de Plano Cloudflare (Task 9, Fechamento da Fase 1)
+
+### Consolidação das Medições no Preview Remoto
+- **Páginas públicas (`/`) com Workers Cache:**
+  - Cache HIT: **0 ms** de CPU de render (gateway despacha diretamente).
+  - Cache MISS (cold start / isolate frio em tiered cache): **19–52 ms** p50, máx 120 ms.
+  - Render sem cache (isolate aquecido): **8,00 ms** p50, máx 15 ms.
+- **Rotas de API / Backend:**
+  - `/api/draft-mode/enable`: **2,00 ms** p50, máx 3,00 ms.
+  - `/api/beds24` (com I/O externo Beds24): **3,00 ms** p50, 10,20 ms p95 (máx 27,00 ms cold).
+
+### Decisão Registrada
+- **Decisão:** permanecer no Workers Free durante a transição da Fase 1 para a Fase 2.
+- **Ressalva técnica:** Os picos de MISS em isolates frios (19–52 ms) e o handshake TLS inicial da Beds24 (27 ms) pontualmente superam a cota nominal de 10 ms do plano Free (embora até o momento todas as requisições tenham sido concluídas com sucesso, `outcome: ok`, sem corte de execução pelo Cloudflare).
+- **Diretriz para a Fase 2:** Reavaliar o comportamento com a Home completa e páginas de acomodação. Caso os cold MISS apresentem cortes (erros 1102) ou a proprietária deseje a margem de segurança de até 50 ms de CPU por requisição com suporte oficial, migrar para o plano **Workers Paid (US$ 5/mês)** mediante autorização prévia expressa da proprietária. Nenhuma contratação paga foi ou será realizada sem essa autorização.
+
+
