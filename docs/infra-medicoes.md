@@ -174,3 +174,22 @@ medir a CPU real das rotas Beds24.
 | `/api/beds24` (2ª rodada / warm) | 13 | 2,00 ms | 2,40 ms | 3,00 ms | 2,00 ms | Isolate aquecido; execução rápida e estável |
 
 Leitura: Ambas as medições (cold p50 3,00 ms / máx 6,00 ms e warm p50 2,00 ms / máx 3,00 ms) operam com folga substancial abaixo do limite de 10 ms do Workers Free. O gateway vinext despacha rotas de API sem overhead de renderização React, mantendo a CPU entre 2–3 ms em regime aquecido.
+
+## Descoberta e chamada real Beds24 (Task 8, 2026-10-01) — medições com I/O externo
+
+### Condições
+- Token real da Beds24 (somente leitura) configurado via secret no Cloudflare Worker `sitio-recanto-azul-site`.
+- Chamada real `GET https://api.beds24.com/v2/properties?includeAllRooms=true` via `/api/beds24`.
+- Script de medição: `/tmp/measure_cpu.py sitio-recanto-azul-site https://sitio-recanto-azul-site.zeloapms.workers.dev/api/beds24 20`.
+
+### Medições de CPU (preview `sitio-recanto-azul-site`, `wrangler tail`)
+
+| Caso | n | CPU p50 | CPU p95 | CPU máx | Wall p50 | Observação |
+|---|---|---|---|---|---|---|
+| `/api/beds24` (I/O externo real Beds24) | 17 | **3,00 ms** | **10,20 ms** | **27,00 ms** | **259,00 ms** | I/O externo assíncrono real; 200 OK com dados de propriedade e 6 quartos |
+
+Leitura:
+- A CPU em regime aquecido permanece em **3,00 ms p50** (mesmo patamar do mock sem rede), confirmando que requisições assíncronas externas (fetch I/O) não consomem tempo de CPU ativa do worker enquanto aguardam a resposta de rede.
+- O pico de CPU (27,00 ms) ocorre pontualmente na inicialização / TLS handshake do primeiro isolate.
+- O tempo de parede (Wall time) mediu **259,00 ms p50**, representando a latência de rede real de ida e volta até os servidores da Beds24.
+

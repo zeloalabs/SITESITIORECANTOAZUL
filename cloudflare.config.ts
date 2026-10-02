@@ -15,6 +15,7 @@ export default defineConfig({
     },
     env: {
       ASSETS: bindings.assets(),
+      BEDS24_TOKEN: bindings.secret(),
       SANITY_API_READ_TOKEN: bindings.secret(),
       SANITY_API_BROWSER_TOKEN: bindings.secret(),
       SANITY_WEBHOOK_SECRET: bindings.secret(),

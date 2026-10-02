@@ -1,0 +1,41 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": 357738,
+      "name": "Sítio Recanto Azul",
+      "roomTypes": [
+        {
+          "id": 737422,
+          "name": "Chalé Ágata",
+          "maxPeople": 4
+        },
+        {
+          "id": 737427,
+          "name": "Chalé Mirante",
+          "maxPeople": 4
+        },
+        {
+          "id": 737429,
+          "name": "Domo Estelar",
+          "maxPeople": 4
+        },
+        {
+          "id": 737430,
+          "name": "Chalé Doce Recanto",
+          "maxPeople": 4
+        },
+        {
+          "id": 737433,
+          "name": "Celeiro Recanto",
+          "maxPeople": 11
+        },
+        {
+          "id": 737435,
+          "name": "Chalé Grupos",
+          "maxPeople": 20
+        }
+      ]
+    }
+  ]
+}
