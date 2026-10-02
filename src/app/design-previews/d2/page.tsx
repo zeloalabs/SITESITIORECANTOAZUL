@@ -4,6 +4,7 @@ import { MapFacade } from "./map";
 import { WhatsApp } from "./whatsapp";
 import { Footer, Header, d2Fonts } from "./parts";
 import { Photo, Reveal, Ridge } from "../fx";
+import { HeroSearch } from "./hero-search";
 import { Panels, type PanelItem } from "../panels2";
 
 type SP = Promise<{ fonts?: string; clean?: string }>;
@@ -55,12 +56,7 @@ export default async function PreviewD2({ searchParams }: { searchParams: SP }) 
           <h1>Um recanto para desacelerar</h1>
           <p className="lede">{brand.tagline}.</p>
         </div>
-        <form className="pd2-find" aria-label="Busca de datas (demonstração)">
-          <span className="f"><span className="k">Chegada</span><span className="v">Selecione</span></span>
-          <span className="f"><span className="k">Partida</span><span className="v">Selecione</span></span>
-          <span className="f"><span className="k">Hóspedes</span><span className="v">2 adultos</span></span>
-          <button type="button" className="pd2-link" aria-disabled="true">Consultar datas</button>
-        </form>
+        <HeroSearch />
       </section>
 
       <div className="pd2-light">
@@ -114,9 +110,9 @@ export default async function PreviewD2({ searchParams }: { searchParams: SP }) 
                       </div>
                       <div className="cap">
                         <h3>{it.name}</h3>
+                        <p className="line">{it.line}</p>
                         <span className="g">{it.guests}</span>
                       </div>
-                      <p className="line">{it.line}</p>
                     </a>
                   </li>
                 ))}

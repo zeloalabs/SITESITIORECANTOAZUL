@@ -15,18 +15,21 @@ export type PanelItem = {
   href: string;
 };
 
-export function Panels({ items, openFirst = 0, tall = true }: { items: PanelItem[]; openFirst?: number; tall?: boolean }) {
-  const [open, setOpen] = useState(openFirst);
+export function Panels({ items, openFirst = null, tall = true }: { items: PanelItem[]; openFirst?: number | null; tall?: boolean }) {
+  const [open, setOpen] = useState<number | null>(openFirst);
   const timer = useRef<number | undefined>(undefined);
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
-  const intend = (i: number) => {
+  const intend = (i: number | null) => {
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setOpen(i), 140);
   };
 
   return (
-    <div className={`pd2-panels ${tall ? "" : "short"}`}>
+    <div
+      className={`pd2-panels ${tall ? "" : "short"}`}
+      onMouseLeave={() => intend(null)}
+    >
       {items.map((it, i) => (
         <article
           key={it.slug}
@@ -34,6 +37,7 @@ export function Panels({ items, openFirst = 0, tall = true }: { items: PanelItem
           data-panel
           className={`pd2-panel ${i === open ? "is-open" : ""}`}
           aria-label={it.name}
+          aria-expanded={i === open}
           onMouseEnter={() => intend(i)}
           onMouseLeave={() => window.clearTimeout(timer.current)}
           onFocus={() => setOpen(i)}

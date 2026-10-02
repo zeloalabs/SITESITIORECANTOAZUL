@@ -24,10 +24,8 @@ export function Header({ solid = false }: { solid?: boolean }) {
     }),
   }));
   const links = [
-    { label: "Extras", href: siteLinks.extras },
     { label: "Experiências", href: siteLinks.experiencias },
-    { label: "Casamentos no sítio", href: siteLinks.casamentos },
-    { label: "Políticas", href: siteLinks.politicas },
+    { label: "Extras & ocasiões", href: siteLinks.extras },
     { label: "Localização", href: siteLinks.localizacao },
   ];
   return (
@@ -58,20 +56,26 @@ export function Shell({ fonts, children, direct }: { fonts?: string; children: R
 }
 
 export function Footer() {
-  const links = nav.filter((n) => n !== "Contato");
+  const navLinks = [
+    { label: "Acomodações", href: `${siteLinks.home}#pd-stays-t` },
+    { label: "Experiências", href: siteLinks.experiencias },
+    { label: "Extras & ocasiões", href: siteLinks.extras },
+    { label: "Localização", href: siteLinks.localizacao },
+    { label: "Políticas", href: siteLinks.politicas },
+  ];
   return (
     <footer className="pd2-foot">
       <div className="brand"><Mark /><p>{brand.place}</p></div>
       <div className="col">
-        <h4>Navegue</h4>
-        <ul>{links.map((n) => <li key={n}><a href="#">{n}</a></li>)}</ul>
+        <h3>Navegue</h3>
+        <ul>{navLinks.map((l) => <li key={l.label}><a href={l.href}>{l.label}</a></li>)}</ul>
       </div>
       <div className="col">
-        <h4>Contato</h4>
+        <h3>Contato</h3>
         <ul>
-          <li><a href="#">Instagram</a></li>
-          <li><a href="#">WhatsApp</a></li>
-          <li><a href="#">Perguntas frequentes</a></li>
+          <li><a href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+          <li><a href="#whatsapp-geral">WhatsApp</a></li>
+          <li><a href={siteLinks.politicas}>Perguntas frequentes</a></li>
         </ul>
       </div>
       <p className="mail">{brand.email}</p>

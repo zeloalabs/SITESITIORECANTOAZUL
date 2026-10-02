@@ -79,15 +79,6 @@ export function SiteNav({ groups, contacts, links, booking }: Props) {
           </div>,
         )}
         {links.map((l) => <a key={l.href} href={l.href}>{l.label}</a>)}
-        {drop(
-          "wa",
-          "WhatsApp",
-          <ul className="one">
-            {contacts.map((c) => (
-              <li key={c.id}><a href={`#whatsapp-${c.id}`} onClick={(e) => e.preventDefault()}>{c.name}</a></li>
-            ))}
-          </ul>,
-        )}
         <a className="pd2-link" href={booking} target="_blank" rel="noopener noreferrer">Reservar<span className="sr"> (abre o motor de reservas em nova aba)</span></a>
       </nav>
 
@@ -115,6 +106,7 @@ export function SiteNav({ groups, contacts, links, booking }: Props) {
                 <ul>{contacts.map((c) => <li key={c.id}><a href={`#whatsapp-${c.id}`} onClick={(e) => e.preventDefault()}>{c.name}</a></li>)}</ul>
               </div>
             </details>
+            <a href="/design-previews/d2/politicas" onClick={() => setMenu(false)}>Políticas</a>
           </div>
           <a className="book" href={booking} target="_blank" rel="noopener noreferrer">Reservar →</a>
         </div>
