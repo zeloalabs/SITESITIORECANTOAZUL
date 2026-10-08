@@ -1,0 +1,36 @@
+name: CI
+
+# Verificações rápidas e sem secrets. e2e (Playwright) ficam fora desta versão: dependem de servidor e navegador.
+on:
+  pull_request:
+  push:
+    branches: [feat/site-real-d2, v2]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Testes unitários
+        run: npm test
+      - name: Build (Next.js)
+        run: npm run build
+      - name: Build (Worker)
+        run: npm run build:vinext
