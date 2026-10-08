@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { brand, stays, experiences, review, nav, pairOf, PH } from "../content";
-import { Photo, Reveal, Ridge } from "../fx";
+import { Photo, Reveal, Ridge } from "@/components/site/fx";
 import { Panels, type PanelItem } from "../panels";
 
 type SP = Promise<{ fonts?: string; clean?: string; stays?: string }>;

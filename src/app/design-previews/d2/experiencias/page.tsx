@@ -1,5 +1,5 @@
 import { experiences, PH } from "../../content";
-import { Photo } from "../../fx";
+import { Photo } from "@/components/site/fx";
 import { Shell } from "../parts";
 
 export default async function ExperienciasPage({ searchParams }: { searchParams: Promise<{ fonts?: string }> }) {

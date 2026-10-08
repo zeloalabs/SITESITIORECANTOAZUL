@@ -1,13 +1,13 @@
 "use client";
 
 // Abas da página de acomodação (rótulos e conteúdo editáveis no CMS): Sobre | Comodidades.
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 
-import type { Extra } from "../content";
 
-type Props = { about: string; capacity: string; amenities: string[]; extras?: Extra[]; whatsappHref?: string };
+export type TabExtra = { name: string; description?: string; image: string; srcSet?: string; alt: string };
+type Props = { about: ReactNode; capacity: string; amenities: string[]; extras?: TabExtra[]; whatsappHref?: string };
 
-export function StayTabs({ about, capacity, amenities, extras = [], whatsappHref = "#whatsapp" }: Props) {
+export function StayTabs({ about, capacity, amenities, extras = [], whatsappHref }: Props) {
   const tabs = [
     { id: "sobre", label: "Sobre" },
     { id: "comodidades", label: "Comodidades" },
@@ -54,7 +54,7 @@ export function StayTabs({ about, capacity, amenities, extras = [], whatsappHref
         <div key={t.id} role="tabpanel" id={`${base}-p-${t.id}`} aria-labelledby={`${base}-t-${t.id}`} hidden={cur !== i} className="panel" tabIndex={0}>
           {t.id === "sobre" ? (
             <>
-              <p>{about}</p>
+              {typeof about === "string" ? <p>{about}</p> : about}
               <dl>
                 <div><dt>Capacidade</dt><dd>{capacity}</dd></div>
               </dl>
@@ -69,7 +69,7 @@ export function StayTabs({ about, capacity, amenities, extras = [], whatsappHref
                 {extras.map((x) => (
                   <li key={x.name}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={x.image} alt={x.alt} loading="lazy" decoding="async" />
+                    <img src={x.image} srcSet={x.srcSet} sizes="(min-width: 900px) 280px, 40vw" alt={x.alt} loading="lazy" decoding="async" />
                     <div>
                       <b>{x.name}</b>
                       {x.description ? <p>{x.description}</p> : null}
@@ -77,7 +77,7 @@ export function StayTabs({ about, capacity, amenities, extras = [], whatsappHref
                   </li>
                 ))}
               </ul>
-              <a className="pd2-link" href={whatsappHref} onClick={(e) => e.preventDefault()}>Consultar extras pelo WhatsApp</a>
+              {whatsappHref ? <a className="pd2-link" href={whatsappHref} {...(whatsappHref.startsWith("#") ? { onClick: (e: React.MouseEvent) => e.preventDefault() } : { target: "_blank", rel: "noopener noreferrer" })}>Consultar extras pelo WhatsApp<span className="sr"> (nova aba)</span></a> : null}
             </>
           )}
         </div>

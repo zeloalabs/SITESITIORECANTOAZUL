@@ -1,6 +1,6 @@
 import { romanticExtras, waContacts } from "../../content";
 import { Shell } from "../parts";
-import { WhatsApp } from "../whatsapp";
+import { WhatsApp } from "@/components/site/whatsapp";
 
 export default async function ExtrasPage({ searchParams }: { searchParams: Promise<{ fonts?: string }> }) {
   const { fonts } = await searchParams;

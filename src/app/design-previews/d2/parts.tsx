@@ -1,8 +1,8 @@
 import type { CSSProperties } from "react";
-import { brand, nav, fontPairs, stays, groups, waContacts, siteLinks, BOOKING_ENGINE, stayHref } from "../content";
-import { SiteNav } from "./nav";
-import { HeaderShell } from "./header-shell";
-import { WhatsApp } from "./whatsapp";
+import { brand, fontPairs, stays, groups, waContacts, siteLinks, BOOKING_ENGINE, stayHref } from "../content";
+import { SiteNav } from "@/components/site/nav";
+import { HeaderShell } from "@/components/site/header-shell";
+import { WhatsApp } from "@/components/site/whatsapp";
 
 const RIDGE = "M0 16 C10 15 18 13 28 14 C38 15 44 9 55 8 C64 7 69 3 80 2 C88 1 94 5 104 7 C111 8 116 12 120 12";
 

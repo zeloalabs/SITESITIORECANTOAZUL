@@ -1,12 +1,12 @@
 /* Efeitos compartilhados dos previews. Só transform/opacity/clip-path. */
 
-.pv-root { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-.pv-root *, .pv-root *::before, .pv-root *::after { box-sizing: border-box; }
-:where(.pv-root) img { display: block; max-width: 100%; }
-:where(.pv-root) a { color: inherit; text-decoration: none; }
-:where(.pv-root) :is(h1, h2, h3, h4, p, ul, ol, figure, blockquote) { margin: 0; padding: 0; }
-:where(.pv-root) ul { list-style: none; }
-:where(.pv-root) button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+.site-root { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+.site-root *, .site-root *::before, .site-root *::after { box-sizing: border-box; }
+:where(.site-root) img { display: block; max-width: 100%; }
+:where(.site-root) a { color: inherit; text-decoration: none; }
+:where(.site-root) :is(h1, h2, h3, h4, p, ul, ol, figure, blockquote) { margin: 0; padding: 0; }
+:where(.site-root) ul { list-style: none; }
+:where(.site-root) button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
 
 .pv-logo {
   display: block;

@@ -10,6 +10,7 @@ export type PanelItem = {
   line: string;
   guests: string;
   src: string;
+  srcSet?: string;
   alt: string;
   focus?: string;
   href: string;
@@ -37,14 +38,13 @@ export function Panels({ items, openFirst = null, tall = true }: { items: PanelI
           data-panel
           className={`pd2-panel ${i === open ? "is-open" : ""}`}
           aria-label={it.name}
-          aria-expanded={i === open}
           onMouseEnter={() => intend(i)}
           onMouseLeave={() => window.clearTimeout(timer.current)}
           onFocus={() => setOpen(i)}
           onClick={() => setOpen(i)}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={it.src} alt={it.alt} loading="lazy" decoding="async" style={{ objectPosition: it.focus }} />
+          <img src={it.src} srcSet={it.srcSet} sizes={it.srcSet ? "(min-width: 900px) 40vw, 100vw" : undefined} alt={it.alt} loading="lazy" decoding="async" style={{ objectPosition: it.focus }} />
           <span className="vname" aria-hidden="true"><span>{it.name}</span></span>
           <div className="info">
             <p className="g">{it.guests}</p>

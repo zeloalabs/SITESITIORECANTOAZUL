@@ -9,6 +9,7 @@ export function HeroSearch() {
 
   useEffect(() => {
     if (!sheetOpen) return;
+    const trigger = triggerRef.current;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
@@ -25,7 +26,7 @@ export function HeroSearch() {
     return () => {
       document.body.style.overflow = prevOverflow;
       document.removeEventListener("keydown", onKey);
-      triggerRef.current?.focus();
+      trigger?.focus();
     };
   }, [sheetOpen]);
 

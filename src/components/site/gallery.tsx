@@ -4,7 +4,7 @@
 // Fase 2: fotos de demonstração da Biblioteca Oficial. No CMS: array de imagens por acomodação (sem limite), com alt e ordem editáveis.
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export type GalleryPhoto = { src: string; w: number; h: number };
+export type GalleryPhoto = { src: string; w: number; h: number; alt?: string; srcSet?: string; full?: string };
 
 export function StayGallery({ name, photos, initial = 8 }: { name: string; photos: GalleryPhoto[]; initial?: number }) {
   const [open, setOpen] = useState<number | null>(null);
@@ -60,7 +60,7 @@ export function StayGallery({ name, photos, initial = 8 }: { name: string; photo
     if (open === null) return;
     for (const d of [-1, 1]) {
       const p = photos[(open + d + n) % n];
-      if (p) new Image().src = p.src;
+      if (p) new Image().src = p.full ?? p.src;
     }
   }, [open, n, photos]);
 
@@ -80,7 +80,7 @@ export function StayGallery({ name, photos, initial = 8 }: { name: string; photo
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.src} width={p.w} height={p.h} alt={`${name}, foto ${i + 1} de ${n}`} loading="lazy" decoding="async" />
+              <img src={p.src} srcSet={p.srcSet} sizes="(min-width: 900px) 33vw, 50vw" width={p.w} height={p.h} alt={p.alt || `${name}, foto ${i + 1} de ${n}`} loading="lazy" decoding="async" />
             </button>
           </li>
         ))}
@@ -121,7 +121,7 @@ export function StayGallery({ name, photos, initial = 8 }: { name: string; photo
           </div>
           <div className="lb-stage">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img key={cur.src} src={cur.src} alt={`${name}, foto ${open + 1} de ${n}`} draggable={false} />
+            <img key={cur.src} src={cur.full ?? cur.src} alt={cur.alt || `${name}, foto ${open + 1} de ${n}`} draggable={false} />
           </div>
           <div className="lb-bar">
             <button type="button" onClick={() => go(-1)} aria-label="Foto anterior">← Anterior</button>

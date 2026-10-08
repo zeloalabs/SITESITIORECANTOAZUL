@@ -7,15 +7,20 @@ import { useEffect, useRef, useState } from "react";
 type Stay = { name: string; href: string; guests: string };
 type Props = {
   groups: { name: string; stays: Stay[] }[];
-  contacts: { id: string; name: string }[];
+  contacts: { id: string; name: string; href?: string | null }[];
   links: { label: string; href: string }[];
+  /** Links que aparecem só no menu mobile (o desktop mantém o cabeçalho enxuto). */
+  moreLinks?: { label: string; href: string }[];
   booking: string;
+  homeHref?: string;
+  brandName?: string;
 };
 
-export function SiteNav({ groups, contacts, links, booking }: Props) {
+export function SiteNav({ groups, contacts, links, moreLinks = [], booking, brandName = "Sítio Recanto Azul" }: Props) {
   const [open, setOpen] = useState<string | null>(null);
   const [menu, setMenu] = useState(false);
   const root = useRef<HTMLElement>(null);
+  const usable = process.env.NODE_ENV === "production" ? contacts.filter((c) => c.href !== null) : contacts;
   const timer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
@@ -86,7 +91,7 @@ export function SiteNav({ groups, contacts, links, booking }: Props) {
       {menu ? (
         <div className="pd2-overlay" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="top">
-            <span>Sítio Recanto Azul</span>
+            <span>{brandName}</span>
             <button type="button" onClick={() => setMenu(false)} autoFocus>Fechar</button>
           </div>
           <div className="list">
@@ -100,13 +105,27 @@ export function SiteNav({ groups, contacts, links, booking }: Props) {
               ))}
             </details>
             {links.map((l) => <a key={l.href} href={l.href} onClick={() => setMenu(false)}>{l.label}</a>)}
-            <details>
-              <summary>WhatsApp</summary>
-              <div className="sub">
-                <ul>{contacts.map((c) => <li key={c.id}><a href={`#whatsapp-${c.id}`} onClick={(e) => e.preventDefault()}>{c.name}</a></li>)}</ul>
-              </div>
-            </details>
-            <a href="/design-previews/d2/politicas" onClick={() => setMenu(false)}>Políticas</a>
+            {moreLinks.map((l) => <a key={l.href} href={l.href} onClick={() => setMenu(false)}>{l.label}</a>)}
+            {usable.length ? (
+              <details>
+                <summary>WhatsApp</summary>
+                <div className="sub">
+                  <ul>
+                    {usable.map((c) => (
+                      <li key={c.id}>
+                        {c.href === undefined ? (
+                          <a href={`#whatsapp-${c.id}`} onClick={(e) => e.preventDefault()}>{c.name}</a>
+                        ) : c.href ? (
+                          <a href={c.href} target="_blank" rel="noopener noreferrer">{c.name}<span className="sr"> (nova aba)</span></a>
+                        ) : (
+                          <span aria-disabled="true">{c.name} (número pendente)</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </details>
+            ) : null}
           </div>
           <a className="book" href={booking} target="_blank" rel="noopener noreferrer">Reservar →</a>
         </div>

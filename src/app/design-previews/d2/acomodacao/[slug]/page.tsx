@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { stays, stayGalleries, stayHref, stayAmenities, stayExtras, stayGuestRules, groups, groupOf, PH } from "../../../content";
-import { Photo } from "../../../fx";
+import { Photo } from "@/components/site/fx";
 import { Footer, Header, d2Fonts } from "../../parts";
-import { AvailabilityCalendar } from "../../calendar";
-import { StayGallery, type GalleryPhoto } from "../../gallery";
-import { StayTabs } from "../../tabs";
-import { WhatsApp } from "../../whatsapp";
+import { AvailabilityCalendar } from "@/components/site/calendar";
+import { StayGallery, type GalleryPhoto } from "@/components/site/gallery";
+import { demoUnavailable } from "../../demo-availability";
+import { StayTabs } from "@/components/site/tabs";
+import { WhatsApp } from "@/components/site/whatsapp";
 import stayPhotos from "../../../stay-photos.json";
 
 type P = Promise<{ slug: string }>;
@@ -69,7 +70,7 @@ export default async function StayPage({ params, searchParams }: { params: P; se
           <p>Escolha a chegada e a saída.</p>
         </div>
         <div className="pd2-avail-cal">
-          <AvailabilityCalendar slug={slug} name={stay.name} rules={stayGuestRules[slug] ?? { minAdults: 1, maxTotal: 2, hint: "" }} />
+          <AvailabilityCalendar isUnavailable={(d) => demoUnavailable(slug, d)} slug={slug} name={stay.name} rules={stayGuestRules[slug] ?? { minAdults: 1, maxTotal: 2, hint: "" }} />
         </div>
       </section>
 

@@ -1,7 +1,7 @@
 import { PH, waContacts } from "../../content";
-import { Photo } from "../../fx";
+import { Photo } from "@/components/site/fx";
 import { Shell } from "../parts";
-import { WhatsApp } from "../whatsapp";
+import { WhatsApp } from "@/components/site/whatsapp";
 
 export default async function CasamentosPage({ searchParams }: { searchParams: Promise<{ fonts?: string }> }) {
   const { fonts } = await searchParams;

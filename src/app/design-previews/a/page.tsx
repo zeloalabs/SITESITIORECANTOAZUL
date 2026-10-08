@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { brand, stays, experiences, review, nav, pairOf, PH } from "../content";
 import { Chrome } from "../chrome";
-import { Photo, Reveal, Ridge, WordReveal } from "../fx";
+import { Photo, Reveal, Ridge, WordReveal } from "@/components/site/fx";
 
 type SP = Promise<{ fonts?: string; clean?: string }>;
 

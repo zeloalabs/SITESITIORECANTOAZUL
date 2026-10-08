@@ -4,14 +4,21 @@
 // Sem grupo (Home, páginas gerais): seletor pequeno. Com grupo (página de acomodação): link direto ao número do grupo.
 import { useEffect, useRef, useState } from "react";
 
-type Group = { id: string; name: string };
-type Props = { groups: readonly Group[]; label?: string; variant?: "link" | "float"; direct?: string };
+// `href`: link real (wa.me) do contato. Sem `href` (número ainda não cadastrado) o contato só aparece fora de produção,
+// desabilitado; nos previews (sem `href` em nenhum contato) o link é um âncora inerte.
+export type WaGroup = { id: string; name: string; href?: string | null };
+type Props = { groups: readonly WaGroup[]; label?: string; variant?: "link" | "float"; direct?: string };
 
-export function WhatsApp({ groups, label = "WhatsApp", variant = "link", direct }: Props) {
+const isProd = process.env.NODE_ENV === "production";
+
+export function WhatsApp({ groups: all, label = "WhatsApp", variant = "link", direct }: Props) {
+  const groups = isProd ? all.filter((g) => g.href !== null) : all;
   const [open, setOpen] = useState(false);
   const [shown, setShown] = useState(variant !== "float"); // o botão flutuante só aparece depois do hero, para não cobrir a busca e os CTAs
   const root = useRef<HTMLDivElement>(null);
   const id = `wa-menu-${variant}-${label.length}`;
+  const hrefOf = (g: WaGroup) => (g.href === undefined ? `#whatsapp-${g.id}` : g.href);
+  const open_ = (g: WaGroup) => (g.href ? { target: "_blank", rel: "noopener noreferrer" } : {});
 
   useEffect(() => {
     if (variant !== "float") return;
@@ -40,15 +47,19 @@ export function WhatsApp({ groups, label = "WhatsApp", variant = "link", direct 
     };
   }, [open]);
 
-  if (direct) {
-    const g = groups.find((x) => x.id === direct);
-    return (
-      <a className={`wa wa-${variant} wa-direct ${shown ? "" : "is-off"}`} href={`#whatsapp-${direct}`} onClick={(e) => e.preventDefault()}>
+  const g = direct ? groups.find((x) => x.id === direct) : undefined;
+  if (g) {
+    const href = hrefOf(g);
+    return href ? (
+      <a className={`wa wa-${variant} wa-direct ${shown ? "" : "is-off"}`} href={href} {...open_(g)} onClick={g.href === undefined ? (e) => e.preventDefault() : undefined}>
         {label}
-        <span className="sr"> — {g?.name}</span>
+        <span className="sr"> — {g.name}{g.href ? " (nova aba)" : ""}</span>
       </a>
+    ) : (
+      <span className={`wa wa-${variant} wa-direct ${shown ? "" : "is-off"}`} aria-disabled="true">{label} (número pendente)</span>
     );
   }
+  if (!groups.length) return null;
 
   return (
     <div ref={root} className={`wa wa-${variant} ${shown ? "" : "is-off"}`}>
@@ -59,7 +70,11 @@ export function WhatsApp({ groups, label = "WhatsApp", variant = "link", direct 
         <ul id={id} className="wa-menu">
           {groups.map((g) => (
             <li key={g.id}>
-              <a href={`#whatsapp-${g.id}`} onClick={(e) => { e.preventDefault(); setOpen(false); }}>{g.name}</a>
+              {hrefOf(g) ? (
+                <a href={hrefOf(g) ?? undefined} {...open_(g)} onClick={(e) => { if (g.href === undefined) e.preventDefault(); setOpen(false); }}>{g.name}{g.href ? <span className="sr"> (nova aba)</span> : null}</a>
+              ) : (
+                <span aria-disabled="true">{g.name} (número pendente)</span>
+              )}
             </li>
           ))}
         </ul>

@@ -3,6 +3,7 @@
 // Calendário de disponibilidade (Fase 2: SÓ UI/UX, dados de demonstração, nenhuma chamada à Beds24).
 // Fase 3: o mesmo componente passa a receber `availability` real (ver docs/superpowers/plans/…fase2…, seção "Fase 3").
 import { useEffect, useMemo, useState } from "react";
+import { GuestControls, useGuests, type GuestRules } from "./guests";
 
 const DAY = 86_400_000;
 const idx = (y: number, m: number, d: number) => Math.floor(Date.UTC(y, m, d) / DAY);
@@ -10,36 +11,34 @@ const fromIdx = (i: number) => new Date(i * DAY);
 const fmtDay = new Intl.DateTimeFormat("pt-BR", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
 const fmtLong = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 const fmtMonth = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" });
+const isoDay = (i: number) => fromIdx(i).toISOString().slice(0, 10);
 const WEEK = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
 
-/** Dados de demonstração determinísticos por acomodação: blocos de 2–5 noites indisponíveis. Não é disponibilidade real. */
-function demoUnavailable(slug: string, day: number): boolean {
-  let seed = 0;
-  for (const ch of slug) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
-  const block = Math.floor((day + (seed % 5)) / 4);
-  const h = (Math.imul(block ^ seed, 2654435761) >>> 0) % 100;
-  return h < 34;
-}
+type Props = {
+  slug: string;
+  name: string;
+  rules: GuestRules;
+  /** Dia (índice UTC em dias desde 1970) indisponível. Na Fase 3 vem da Beds24; nos previews, de dados de demonstração. */
+  isUnavailable: (day: number) => boolean;
+  /** Destino do botão "Reservar estas datas". Sem ele, o botão não navega (previews). */
+  bookingHref?: (sel: { checkin: string; nights: number; adults: number; children: number }) => string;
+};
 
-type Rules = { minAdults: number; maxAdults?: number; maxChildren?: number; maxTotal: number; hint: string };
-type Props = { slug: string; name: string; rules: Rules };
-
-export function AvailabilityCalendar({ slug, name, rules }: Props) {
+export function AvailabilityCalendar({ slug, name, rules, isUnavailable, bookingHref }: Props) {
   const [today, setToday] = useState<number | null>(null);
   const [offset, setOffset] = useState(0);
   const [start, setStart] = useState<number | null>(null);
   const [end, setEnd] = useState<number | null>(null);
   const [msg, setMsg] = useState("");
-  const [adults, setAdults] = useState(Math.min(2, rules.maxAdults ?? rules.maxTotal));
-  const [children, setChildren] = useState(0);
-  const [gmsg, setGmsg] = useState("");
+  const guests = useGuests(rules);
+  const { adults, children } = guests;
 
   useEffect(() => {
     const n = new Date();
     setToday(idx(n.getFullYear(), n.getMonth(), n.getDate())); // eslint-disable-line react-hooks/set-state-in-effect
   }, []);
 
-  const un = (d: number) => demoUnavailable(slug, d);
+  const un = isUnavailable;
 
   const months = useMemo(() => {
     if (today === null) return [];
@@ -86,22 +85,6 @@ export function AvailabilityCalendar({ slug, name, rules }: Props) {
     setMsg("");
   };
 
-  const total = adults + children;
-  const canAdultUp = adults < (rules.maxAdults ?? rules.maxTotal) && total < rules.maxTotal;
-  const canChildUp = children < (rules.maxChildren ?? rules.maxTotal) && total < rules.maxTotal;
-  const limitText = rules.hint; // texto exibido, editável no CMS
-  const bump = (kind: "a" | "c", d: 1 | -1) => {
-    setGmsg("");
-    if (kind === "a") {
-      if (d === 1 && !canAdultUp) return setGmsg("Limite de hóspedes atingido.");
-      if (d === -1 && adults <= rules.minAdults) return setGmsg("É necessário pelo menos 1 adulto.");
-      setAdults(adults + d);
-    } else {
-      if (d === 1 && !canChildUp) return setGmsg("Limite de hóspedes atingido.");
-      if (d === -1 && children <= 0) return;
-      setChildren(children + d);
-    }
-  };
   const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
   const guestsText = `${plural(adults, "adulto", "adultos")}${children ? `, ${plural(children, "criança", "crianças")}` : ""}`;
 
@@ -116,25 +99,7 @@ export function AvailabilityCalendar({ slug, name, rules }: Props) {
 
   return (
     <div className="cal" data-slug={slug}>
-      <div className="cal-guests" role="group" aria-label="Hóspedes">
-        <div className="row">
-          <span className="lab" id="g-ad">Adultos</span>
-          <div className="step">
-            <button type="button" onClick={() => bump("a", -1)} aria-label="Menos um adulto" aria-describedby="g-ad" disabled={adults <= rules.minAdults}>−</button>
-            <output aria-live="polite">{adults}</output>
-            <button type="button" onClick={() => bump("a", 1)} aria-label="Mais um adulto" aria-describedby="g-ad" disabled={!canAdultUp}>+</button>
-          </div>
-        </div>
-        <div className="row">
-          <span className="lab" id="g-ch">Crianças</span>
-          <div className="step">
-            <button type="button" onClick={() => bump("c", -1)} aria-label="Menos uma criança" aria-describedby="g-ch" disabled={children <= 0}>−</button>
-            <output aria-live="polite">{children}</output>
-            <button type="button" onClick={() => bump("c", 1)} aria-label="Mais uma criança" aria-describedby="g-ch" disabled={!canChildUp}>+</button>
-          </div>
-        </div>
-        <p className="hint" role="status">{gmsg || limitText}</p>
-      </div>
+      <GuestControls guests={guests} hint={rules.hint} />
       <div className="cal-nav">
         <button type="button" onClick={() => setOffset((o) => Math.max(0, o - 1))} disabled={offset === 0} aria-label="Mês anterior">←</button>
         <button type="button" onClick={() => setOffset((o) => Math.min(10, o + 1))} disabled={offset >= 10} aria-label="Próximo mês">→</button>
@@ -185,7 +150,14 @@ export function AvailabilityCalendar({ slug, name, rules }: Props) {
         <p role="status" aria-live="polite" className={msg ? "warn" : ""}>{status}</p>
         {start !== null ? <button type="button" className="cal-clear" onClick={clear}>Limpar</button> : null}
         {end !== null ? (
-          <a className="pd2-link strong" href="#reservar" onClick={(e) => e.preventDefault()} data-room={slug} data-adults={adults} data-children={children}>
+          <a
+            className="pd2-link strong"
+            href={bookingHref && start !== null ? bookingHref({ checkin: isoDay(start), nights, adults, children }) : "#reservar"}
+            {...(bookingHref ? { target: "_blank", rel: "noopener noreferrer" } : { onClick: (e: React.MouseEvent) => e.preventDefault() })}
+            data-room={slug}
+            data-adults={adults}
+            data-children={children}
+          >
             Reservar estas datas<span className="sr"> — {name}</span>
           </a>
         ) : null}

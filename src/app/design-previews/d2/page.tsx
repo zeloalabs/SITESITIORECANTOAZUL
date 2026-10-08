@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { brand, stays, experiences, review, stayHref, romanticExtras, waContacts, siteLinks, MAPS_URL, MAPS_EMBED, PH } from "../content";
-import { MapFacade } from "./map";
-import { WhatsApp } from "./whatsapp";
+import { MapFacade } from "@/components/site/map";
+import { WhatsApp } from "@/components/site/whatsapp";
 import { Footer, Header, d2Fonts } from "./parts";
-import { Photo, Reveal, Ridge } from "../fx";
+import { Photo, Reveal, Ridge } from "@/components/site/fx";
 import { HeroSearch } from "./hero-search";
-import { Panels, type PanelItem } from "../panels2";
+import { Panels, type PanelItem } from "@/components/site/panels";
 
 type SP = Promise<{ fonts?: string; clean?: string }>;
 
