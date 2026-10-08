@@ -9,6 +9,7 @@ import {
   EXTRAS_QUERY,
   FAQS_QUERY,
   PAGE_QUERY,
+  PAGE_SLUGS_QUERY,
   POLICIES_QUERY,
   REVIEWS_QUERY,
   SITE_QUERY,
@@ -39,13 +40,18 @@ export const seedFetcher: Fetcher = async (query, params = {}) => {
   return result.get();
 };
 
+let lastWarn = 0;
 export const sanityFetcher: Fetcher = async (query, params = {}) => {
   try {
     const { data } = await sanityFetch({ query, params });
     return data;
   } catch (error) {
-    // Só a mensagem (sem objeto de erro/headers) para nunca registrar token.
-    console.error("[content] Sanity indisponível; usando conteúdo-base.", error instanceof Error ? error.message.slice(0, 160) : "erro");
+    // Só a mensagem (sem objeto de erro/headers) para nunca registrar token; no máximo um aviso por minuto.
+    const now = Date.now();
+    if (now - lastWarn > 60_000) {
+      lastWarn = now;
+      console.warn("[content] Sanity indisponível; usando conteúdo-base.", error instanceof Error ? error.message.slice(0, 160) : "erro");
+    }
     return null;
   }
 };
@@ -106,6 +112,11 @@ export function createContent(live: Fetcher, seed: Fetcher = seedFetcher) {
       };
     },
 
+    async pageSlugs(): Promise<string[]> {
+      const slugs = await pick<string[]>(PAGE_SLUGS_QUERY, undefined, nonEmptyArray as never);
+      return (slugs ?? []).map(String);
+    },
+
     async extras(): Promise<Extra[]> {
       return normalizeExtras((await pick(EXTRAS_QUERY, undefined, nonEmptyArray)) as never);
     },
@@ -131,6 +142,7 @@ export const getChrome = cache(() => content.chrome());
 export const getAccommodation = cache((slug: string) => content.accommodation(slug));
 export const getAccommodationSlugs = cache(() => content.accommodationSlugs());
 export const getPage = cache((slug: string) => content.page(slug));
+export const getPageSlugs = cache(() => content.pageSlugs());
 export const getExtras = cache(() => content.extras());
 export const getExperiences = cache(() => content.experiences());
 export const getFaqs = cache(() => content.faqs());
