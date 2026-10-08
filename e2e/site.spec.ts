@@ -80,11 +80,6 @@ test("rodapé leva às páginas principais", async ({ page }) => {
   for (const h of ["/acomodacoes", "/experiencias", "/extras", "/politicas", "/faq", "/contato"]) expect(hrefs).toContain(h);
 });
 
-test("sem número cadastrado nenhum link wa.me é inventado", async ({ page }) => {
-  await page.goto("/contato");
-  await expect(page.locator("a[href*='wa.me']")).toHaveCount(0);
-});
-
 test("404 para acomodação e página inexistentes", async ({ page }) => {
   expect((await page.goto("/acomodacoes/nao-existe"))?.status()).toBe(404);
   expect((await page.goto("/pagina-que-nao-existe"))?.status()).toBe(404);
@@ -135,4 +130,43 @@ test("acomodação: hero com Reservar (Beds24, nova aba) e barra fixa só no mob
   await page.locator("#disponibilidade").scrollIntoViewIfNeeded();
   await expect(bar).toHaveClass(/is-off/); // sem duplicar os botões da seção
   await expect(page.locator(".wa-float:visible")).toHaveCount(0);
+});
+
+// Contatos oficiais: cada acomodação fala com o número do seu grupo; nada de número pendente ou placeholder antigo.
+const ROMANTICAS = "5548988445797";
+const GRUPOS = "5548996620808";
+const waLinks = (page: Page) => page.locator('a[href^="https://wa.me/"]').evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).href));
+
+for (const [slug, number] of [["domo-estelar", ROMANTICAS], ["agata", ROMANTICAS], ["mirante", ROMANTICAS], ["doce-recanto", ROMANTICAS], ["celeiro", GRUPOS], ["chale-para-grupos", GRUPOS]] as const) {
+  test(`WhatsApp de ${slug} usa só o número do grupo`, async ({ page }) => {
+    await page.goto(`/acomodacoes/${slug}`);
+    const links = await waLinks(page);
+    expect(links.length).toBeGreaterThan(0);
+    for (const href of links) expect(href).toMatch(new RegExp(`^https://wa\\.me/${number}\\?text=`));
+    await expect(page.locator("body")).not.toContainText("número pendente");
+  });
+}
+
+test("Casamentos fala com o número de grupos", async ({ page }) => {
+  await page.goto("/casamentos");
+  const casamentos = (await waLinks(page)).filter((h) => decodeURIComponent(h).includes("casamento"));
+  expect(casamentos.length).toBeGreaterThan(0);
+  for (const href of casamentos) expect(href).toMatch(new RegExp(`^https://wa\\.me/${GRUPOS}\\?text=`));
+});
+
+test("Contato e rodapé: Instagram, e-mail e Maps oficiais; links externos seguros", async ({ page }) => {
+  await page.goto("/contato");
+  await expect(page.locator("main")).not.toContainText("número pendente");
+  const insta = page.locator('a[href="https://www.instagram.com/sitiorecantoazul/"]');
+  await expect(insta.first()).toHaveAttribute("rel", /noopener/);
+  await expect(insta.first()).toHaveAttribute("target", "_blank");
+  await expect(page.locator('a[href="mailto:sitiorecantoazulsc@gmail.com"]').first()).toBeVisible();
+  await expect(page.locator('a[href*="contato@sitiorecantoazul"]')).toHaveCount(0);
+  const wa = await waLinks(page);
+  expect(wa.map((h) => h.split("?")[0]).sort()).toEqual([`https://wa.me/${GRUPOS}`, `https://wa.me/${GRUPOS}`, `https://wa.me/${ROMANTICAS}`].sort());
+  await page.goto("/localizacao");
+  const maps = page.locator('a[href="https://maps.app.goo.gl/7PnFkeAq9G3v4pa99?g_st=ic"]');
+  await expect(maps.first()).toHaveAttribute("rel", /noopener/);
+  await expect(maps.first()).toHaveAttribute("target", "_blank");
+  await expect(page.locator("main")).toContainText("Alfredo Wagner, Santa Catarina");
 });

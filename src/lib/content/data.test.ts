@@ -30,7 +30,7 @@ describe("conteúdo-base (fallback) avaliado com a mesma GROQ", () => {
 
   it("WhatsApp por acomodação: românticas → número das românticas; Celeiro, Chalé e Casamentos → grupos", async () => {
     const { contacts, groups } = await content.chrome();
-    const numberOf = (key: string | undefined) => contacts.find((c) => c.key === key)?.number;
+    const numberOf = (key: string | null | undefined) => contacts.find((c) => c.key === key)?.number;
     for (const g of groups) for (const s of g.stays) {
       const href = whatsappUrl(pickContact(contacts, [g.whatsappKey]), { acomodacao: s.name })!;
       const expected = g.id === "romanticas" ? "5548988445797" : "5548996620808";
@@ -38,9 +38,9 @@ describe("conteúdo-base (fallback) avaliado com a mesma GROQ", () => {
       expect(decodeURIComponent(href)).toContain("Sítio Recanto Azul");
     }
     expect(groups.map((g) => [g.id, numberOf(g.whatsappKey)])).toEqual([["romanticas", "5548988445797"], ["grupos", "5548996620808"]]);
-    const casamentos = await content.page("casamentos");
-    const header = casamentos!.sections.find((s) => s._type === "cabecalhoPagina") as { whatsappKey?: string };
-    expect(numberOf(header.whatsappKey)).toBe("5548996620808");
+    const casamentos = (await content.page("casamentos"))!;
+    const header = casamentos.sections?.find((s) => s._type === "cabecalhoPagina") as { whatsappKey?: string } | undefined;
+    expect(numberOf(header?.whatsappKey)).toBe("5548996620808");
   });
 
   it("contatos oficiais: Instagram, Maps e e-mail", async () => {
