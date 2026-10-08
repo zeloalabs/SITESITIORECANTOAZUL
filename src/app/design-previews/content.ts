@@ -77,7 +77,7 @@ export const stays: Stay[] = [
     slug: "chale-para-grupos",
     name: "Chalé para Grupos",
     line: "Espaço amplo com galpão de festas e jacuzzi externa",
-    guests: "Até 23 hóspedes",
+    guests: "Até 20 hóspedes",
     detail: "Galpão de festas completo, casa com 3 quartos e jacuzzi externa.",
     photos: { main: PH("grupos-varanda"), alt: "Varanda do Chalé para Grupos com rede e vista", focus: "50% 50%", second: PH("grupos-galpao") },
   },
@@ -186,7 +186,7 @@ export const stayGuestRules: Record<string, GuestRules> = {
   mirante: ROMANTICA,
   "doce-recanto": ROMANTICA,
   celeiro: { minAdults: 1, maxTotal: 11, hint: "Máximo: 11 hóspedes. Aceitamos pets sem custo extra." },
-  "chale-para-grupos": { minAdults: 1, maxTotal: 23, hint: "Máximo: 23 hóspedes. Aceitamos pets sem custo extra." },
+  "chale-para-grupos": { minAdults: 1, maxTotal: 20, hint: "Máximo: 20 hóspedes. Aceitamos pets sem custo extra." },
 };
 
 // Extras das românticas (no CMS: documentos `extra`, editáveis, referenciados pelo grupo/acomodação).
