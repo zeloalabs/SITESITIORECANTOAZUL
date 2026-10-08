@@ -1,7 +1,7 @@
 "use client";
 
-// Seção "Disponibilidade" da página de acomodação.
-// Hoje (sem disponibilidade ao vivo): hóspedes + "Consultar disponibilidade" (WhatsApp com a seleção) + "Reservar" (motor Beds24).
+// Seção "Reserve sua estadia" da página de acomodação (id interno `disponibilidade`).
+// Hoje (sem disponibilidade ao vivo): hóspedes + "Falar no WhatsApp" (com a seleção) + "Reservar" (motor Beds24).
 // Fase 3: passar `availability` (dados reais, vindos de uma rota do servidor) liga o calendário sem mudar o resto da página.
 import { AvailabilityCalendar } from "./calendar";
 import { GuestControls, useGuests, type GuestRules } from "./guests";
@@ -35,15 +35,15 @@ export function StayBooking({ slug, name, rules, contact, reserveHref, availabil
 function GuestsAndContact({ name, rules, contact, reserveHref }: Omit<Props, "slug" | "availability">) {
   const guests = useGuests(rules);
   const text = `${plural(guests.adults, "adulto", "adultos")}${guests.children ? `, ${plural(guests.children, "criança", "crianças")}` : ""}`;
-  const wa = whatsappUrl(contact, { acomodacao: name, extra: `Somos ${text}. Gostaria de consultar disponibilidade.` });
+  const wa = whatsappUrl(contact, { acomodacao: name, extra: `Somos ${text}. Gostaria de combinar as datas.` });
   return (
     <div className="cal cal-soon">
       <GuestControls guests={guests} hint={rules.hint} />
       <div className="cal-bar">
-        <p role="status" aria-live="polite">{name} · {text}. Consulte datas e valores com a nossa equipe ou abra o motor de reservas.</p>
-        {wa ? <a className="pd2-link strong" href={wa} target="_blank" rel="noopener noreferrer">Consultar disponibilidade<span className="sr"> pelo WhatsApp (nova aba)</span></a> : null}
+        <p role="status" aria-live="polite">Para {text} em {name}: reserve no motor de reservas ou combine as datas pelo WhatsApp.</p>
+        {wa ? <a className="pd2-link strong" href={wa} target="_blank" rel="noopener noreferrer">Combinar datas no WhatsApp<span className="sr"> (nova aba)</span></a> : null}
         {reserveHref ? <a className="pd2-link" href={reserveHref} target="_blank" rel="noopener noreferrer">Reservar<span className="sr"> — {name} (abre o motor de reservas em nova aba)</span></a> : null}
-        {!wa && !reserveHref ? <p>Em breve você poderá consultar as datas por aqui.</p> : null}
+        {!wa && !reserveHref ? <p>Em breve você poderá reservar por aqui.</p> : null}
       </div>
     </div>
   );

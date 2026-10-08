@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { PageFrame } from "@/components/site/chrome";
 import { Photo } from "@/components/site/fx";
 import { StayGallery } from "@/components/site/gallery";
+import { StayBar } from "@/components/site/stay-bar";
 import { StayBooking } from "@/components/site/stay-booking";
 import { StayTabs } from "@/components/site/tabs";
 import { WhatsApp } from "@/components/site/whatsapp";
@@ -37,6 +38,8 @@ export default async function StayPage({ params }: P) {
   const contact = pickContact(contacts, [stay.whatsappKey, groupKey]);
   const photos = galleryPhotos(stay, process.env.NODE_ENV !== "production");
   const others = groups.flatMap((g) => g.stays).filter((s) => s.slug !== slug);
+  const reserveHref = reserveUrl(settings, stay.beds24RoomId);
+  const barWa = whatsappUrl(contact, { acomodacao: stay.name });
   const tabsWa = whatsappUrl(contact, { acomodacao: stay.name, extra: "Gostaria de consultar os extras." });
   const jsonLd = {
     "@context": "https://schema.org",
@@ -48,7 +51,7 @@ export default async function StayPage({ params }: P) {
   };
 
   return (
-    <PageFrame direct={contact?.key} acomodacao={stay.name}>
+    <PageFrame direct={contact?.key} acomodacao={stay.name} stickyBar>
       <main id="conteudo">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
         <section className="pd2-hero pd2-stayhero">
@@ -57,7 +60,7 @@ export default async function StayPage({ params }: P) {
             <h1>{stay.name}</h1>
             <p className="lede">{stay.tagline}.</p>
             <div className="pd2-stay-cta">
-              <a className="pd2-link" href="#disponibilidade">Consultar disponibilidade</a>
+              <a className="pd2-link" href={reserveHref ?? "#disponibilidade"} {...(reserveHref ? { target: "_blank", rel: "noopener noreferrer" } : {})}>Reservar{reserveHref ? <span className="sr"> — {stay.name} (abre o motor de reservas em nova aba)</span> : null}</a>
               {contact ? <WhatsApp groups={waGroups(contacts, { acomodacao: stay.name })} label="Falar pelo WhatsApp" direct={contact.key} /> : null}
             </div>
           </div>
@@ -89,11 +92,11 @@ export default async function StayPage({ params }: P) {
 
         <section id="disponibilidade" className="pd2-avail" aria-labelledby="disp-t">
           <div className="pd2-avail-head">
-            <h2 id="disp-t">Disponibilidade</h2>
-            <p>Informe os hóspedes e consulte as datas.</p>
+            <h2 id="disp-t">Reserve sua estadia</h2>
+            <p>Escolha quantas pessoas vão e reserve direto no nosso motor de reservas, ou fale com a gente para combinar as datas.</p>
           </div>
           <div className="pd2-avail-cal">
-            <StayBooking slug={slug} name={stay.name} rules={stay.guests} contact={contact ? { number: contact.number, message: contact.message } : null} reserveHref={reserveUrl(settings, stay.beds24RoomId)} />
+            <StayBooking slug={slug} name={stay.name} rules={stay.guests} contact={contact ? { number: contact.number, message: contact.message } : null} reserveHref={reserveHref} />
           </div>
         </section>
 
@@ -110,6 +113,7 @@ export default async function StayPage({ params }: P) {
           </section>
         </div>
       </main>
+      <StayBar name={stay.name} reserveHref={reserveHref} whatsappHref={barWa} sectionId="disponibilidade" />
     </PageFrame>
   );
 }

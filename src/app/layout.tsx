@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { draftMode } from "next/headers";
 import { VisualEditing } from "next-sanity/visual-editing";
 import { SanityLive } from "@/lib/content/client";
@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   title: { default: "Sítio Recanto Azul", template: "%s | Sítio Recanto Azul" },
   description: "Hospedagem em Alfredo Wagner/SC.",
 };
+
+// viewport-fit=cover: necessário para `env(safe-area-inset-*)` (barra fixa de reserva no iPhone).
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export default async function RootLayout({
   children,

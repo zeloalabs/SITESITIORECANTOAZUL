@@ -727,3 +727,17 @@ html:has(.pd2) { scrollbar-color: rgba(243, 237, 224, .28) #070d1f; scrollbar-wi
 .cal-soon .cal-bar { margin-top: 30px; align-items: center; }
 .wa [aria-disabled="true"], .wa-menu [aria-disabled="true"] { opacity: .6; cursor: not-allowed; }
 @media (prefers-reduced-motion: reduce) { .pd2-skip, .pd2-faq summary::after { transition: none; } }
+
+/* Barra fixa de reserva (mobile) da página de acomodação */
+.stay-bar { position: fixed; z-index: 70; left: 0; right: 0; bottom: 0; display: flex; gap: 10px; padding: 10px max(var(--pad), env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(var(--pad), env(safe-area-inset-left)); background: rgba(7, 13, 31, .94); border-top: 1px solid var(--line); transition: transform .5s var(--ease), opacity .4s; }
+.stay-bar.is-off { transform: translateY(100%); opacity: 0; pointer-events: none; visibility: hidden; transition: transform .4s var(--ease), opacity .3s, visibility 0s .4s; }
+.stay-bar a { display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 18px; font-size: 15.5px; border: 1px solid rgba(243, 237, 224, .4); color: var(--ink); text-align: center; }
+.stay-bar-main { flex: 1 1 0; background: var(--ink); color: var(--bg) !important; border-color: var(--ink) !important; font-weight: 600; }
+.stay-bar-wa { flex: 0 0 auto; }
+.stay-bar a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.stay-bar-main:focus-visible { outline-color: #fff; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ink); }
+.stay-bar-spacer { height: calc(72px + env(safe-area-inset-bottom)); background: var(--bg); }
+@media (min-width: 900px) { .stay-bar, .stay-bar-spacer { display: none; } }
+@media (max-width: 899px) { .wa-float-desktop { display: none; } }
+@media (min-width: 900px) { .wa-float-desktop { display: contents; } }
+@media (prefers-reduced-motion: reduce) { .stay-bar, .stay-bar.is-off { transition: none; } }

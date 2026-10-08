@@ -84,13 +84,21 @@ export async function FloatingWhatsApp({ direct, acomodacao }: { direct?: string
 }
 
 /** Moldura das páginas: cabeçalho, conteúdo, rodapé e WhatsApp flutuante. */
-export async function PageFrame({ children, solid = false, direct, acomodacao }: { children: React.ReactNode; solid?: boolean; direct?: string | null; acomodacao?: string }) {
+export async function PageFrame({ children, solid = false, direct, acomodacao, stickyBar = false }: { children: React.ReactNode; solid?: boolean; direct?: string | null; acomodacao?: string; stickyBar?: boolean }) {
   return (
     <>
       <SiteHeader solid={solid} />
       {children}
       <SiteFooter />
-      <FloatingWhatsApp direct={direct} acomodacao={acomodacao} />
+      {stickyBar ? (
+        <>
+          {/* No mobile a barra fixa já traz o WhatsApp: o botão flutuante só aparece a partir do desktop. */}
+          <div className="wa-float-desktop"><FloatingWhatsApp direct={direct} acomodacao={acomodacao} /></div>
+          <div className="stay-bar-spacer" aria-hidden="true" />
+        </>
+      ) : (
+        <FloatingWhatsApp direct={direct} acomodacao={acomodacao} />
+      )}
     </>
   );
 }
