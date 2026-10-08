@@ -102,6 +102,8 @@ export function Reveal({
 /** Foto com parallax sutil (~6%) dentro da moldura. `zoom` = zoom lento contínuo do hero (1 → 1,06 em 20 s). */
 export function Photo({
   src,
+  srcSet,
+  sizes,
   alt,
   focus = "50% 50%",
   className = "",
@@ -110,6 +112,8 @@ export function Photo({
   parallax = true,
 }: {
   src: string;
+  srcSet?: string;
+  sizes?: string;
   alt: string;
   focus?: string;
   className?: string;
@@ -125,6 +129,8 @@ export function Photo({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
+          srcSet={srcSet}
+          sizes={srcSet ? (sizes ?? "100vw") : undefined}
           alt={alt}
           loading={priority ? "eager" : "lazy"}
           decoding="async"

@@ -699,3 +699,31 @@ html:has(.pd2) { scrollbar-color: rgba(243, 237, 224, .28) #070d1f; scrollbar-wi
 @media (max-width: 899px) {
   .pd2-hero:not(.pd2-stayhero)::after { background: linear-gradient(to bottom, rgba(7, 13, 31, .72), rgba(7, 13, 31, .5) 34%, rgba(7, 13, 31, 0) 58%, rgba(7, 13, 31, 0) 66%, rgba(7, 13, 31, .86)); }
 }
+
+/* ---- Site real (além do D2 dos previews) ---- */
+.pd2-skip { position: absolute; left: 12px; top: -64px; z-index: 100; padding: 12px 18px; background: #f3ede0; color: #070d1f; font-size: 15px; transition: top .2s var(--out); }
+.pd2-skip:focus { top: 12px; }
+.pd2-find a.pd2-link { margin-left: auto; }
+.pd2-prose { max-width: 760px; margin: 0 auto; padding: var(--section-y) var(--pad); display: grid; gap: 18px; }
+.pd2-prose h2 { font-size: var(--h2); line-height: 1.05; }
+.pd2-prose :is(p, li) { margin: 0; color: var(--mut); font-size: 17px; }
+.pd2-prose .eyebrow { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; }
+.pd2-faq { max-width: 860px; margin: 0 auto; padding: 40px var(--pad) 120px; }
+.pd2-faq details { border-top: 1px solid var(--line); }
+.pd2-faq details:last-child { border-bottom: 1px solid var(--line); }
+.pd2-faq summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 20px; align-items: center; min-height: 56px; padding: 16px 0; font-family: var(--f-display); font-size: clamp(20px, 4.6vw, 26px); }
+.pd2-faq summary::-webkit-details-marker { display: none; }
+.pd2-faq summary::after { content: "+"; font-family: var(--f-body); font-size: 24px; transition: transform .3s var(--out); }
+.pd2-faq details[open] summary::after { transform: rotate(45deg); }
+.pd2-faq summary:focus-visible { outline: 1px solid currentColor; outline-offset: 4px; }
+.pd2-faq p { margin: 0 0 22px; max-width: 62ch; color: var(--mut); font-size: 16.5px; }
+.pd2-contacts { max-width: 860px; margin: 0 auto; padding: 40px var(--pad) 120px; display: grid; gap: 24px; }
+.pd2-contacts h2 { font-size: clamp(28px, 6vw, 40px); line-height: 1.06; }
+.pd2-contacts ul { list-style: none; margin: 0; padding: 0; display: grid; }
+.pd2-contacts li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 24px; padding: 16px 0; border-top: 1px solid var(--line); }
+.pd2-contacts li:last-child { border-bottom: 1px solid var(--line); }
+.pd2-contacts b { font-weight: 400; font-family: var(--f-display); font-size: 20px; }
+.pd2-contacts span:not(.sr) { color: var(--mut); }
+.cal-soon .cal-bar { margin-top: 30px; align-items: center; }
+.wa [aria-disabled="true"], .wa-menu [aria-disabled="true"] { opacity: .6; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) { .pd2-skip, .pd2-faq summary::after { transition: none; } }

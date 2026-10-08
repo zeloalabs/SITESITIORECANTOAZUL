@@ -163,6 +163,14 @@ export const seedDocuments: SeedDoc[] = [
     seoDescription: "Chalés e domo com hidromassagem, natureza e privacidade para casais e grupos em Alfredo Wagner, Santa Catarina.",
   },
   {
+    _id: "page-acomodacoes", _type: "page", title: "Acomodações", slug: slug("acomodacoes"),
+    sections: [
+      { _key: key("s"), _type: "cabecalhoPagina", title: "Acomodações", lead: "Chalés e domo para casais, e espaços amplos para grupos." },
+      { _key: key("s"), _type: "acomodacoes", title: "Escolha onde ficar" },
+    ],
+    seoTitle: "Acomodações", seoDescription: "Domo Estelar, Ágata, Mirante, Doce Recanto, Celeiro e Chalé para Grupos em Alfredo Wagner, SC.",
+  },
+  {
     _id: "page-extras", _type: "page", title: "Extras", slug: slug("extras"),
     sections: [
       { _key: key("s"), _type: "cabecalhoPagina", title: "Extras", lead: "Para tornar a estadia ainda mais especial, nas acomodações românticas." },

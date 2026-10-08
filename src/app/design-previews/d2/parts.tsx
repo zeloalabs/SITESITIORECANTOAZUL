@@ -1,5 +1,5 @@
-import type { CSSProperties } from "react";
-import { brand, fontPairs, stays, groups, waContacts, siteLinks, BOOKING_ENGINE, stayHref } from "../content";
+import { d2Fonts } from "@/components/site/fonts";
+import { brand, stays, groups, waContacts, siteLinks, BOOKING_ENGINE, stayHref } from "../content";
 import { SiteNav } from "@/components/site/nav";
 import { HeaderShell } from "@/components/site/header-shell";
 import { WhatsApp } from "@/components/site/whatsapp";
@@ -84,11 +84,4 @@ export function Footer() {
   );
 }
 
-/** Fontes da D2: por padrão (auto) Par 1 no desktop e Par 2 no mobile; ?fonts=1|2 força um par. */
-export function d2Fonts(fonts?: string) {
-  const mode = fonts === "1" || fonts === "2" ? fonts : "auto";
-  const a = fontPairs.c["1"];
-  const b = fontPairs.c["2"];
-  const style = { "--f1d": a.display, "--f1b": a.body, "--f2d": b.display, "--f2b": b.body } as CSSProperties;
-  return { mode, style, hrefs: mode === "auto" ? [a.href, b.href] : [mode === "1" ? a.href : b.href], className: `pd2 f-${mode}` };
-}
+export { d2Fonts } from "@/components/site/fonts";
