@@ -31,11 +31,11 @@ export async function SiteHeader({ solid = false }: { solid?: boolean }) {
         contacts={waGroups(contacts)}
         links={[
           { label: "Experiências", href: "/experiencias" },
-          { label: "Extras & ocasiões", href: "/extras" },
+          { label: "Extras", href: "/extras" },
           { label: "Localização", href: "/#localizacao" },
         ]}
         moreLinks={[
-          { label: "Casamentos no sítio", href: "/casamentos" },
+          { label: "Casamentos", href: "/casamentos" },
           { label: "Políticas", href: "/politicas" },
           { label: "Perguntas frequentes", href: "/faq" },
           { label: "Contato", href: "/contato" },
@@ -51,7 +51,7 @@ export async function SiteFooter() {
   const navLinks = [
     { label: "Acomodações", href: "/acomodacoes" },
     { label: "Experiências", href: "/experiencias" },
-    { label: "Extras & ocasiões", href: "/extras" },
+    { label: "Extras", href: "/extras" },
     { label: "Localização", href: "/#localizacao" },
     { label: "Políticas", href: "/politicas" },
   ];

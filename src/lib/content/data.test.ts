@@ -87,7 +87,7 @@ describe("Sanity tem prioridade; fallback cobre stubs e indisponibilidade", () =
   it("stub da Fase 1 (sem frase/grupo) cai na seed, mantendo o roomId", async () => {
     const c = createContent(async () => ({ slug: "agata", name: "Ágata", beds24RoomId: 737422 }));
     const stay = await c.accommodation("agata");
-    expect(stay!.tagline).toContain("Hidro com vista");
+    expect(stay!.tagline).toContain("Hidromassagem com vista");
     expect(stay!.beds24RoomId).toBe(737422);
   });
 
