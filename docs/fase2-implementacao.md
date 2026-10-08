@@ -47,8 +47,10 @@ Fotos não fazem parte da seed (ver `docs/fotos-referencias.md`).
 2. WhatsApp: números **não existem** em nenhuma fonte (V1 só tem `5500000000000`). Contato sem número é escondido em produção e
    aparece desabilitado ("número pendente") em desenvolvimento. Nunca se gera `wa.me` sem número válido.
 3. Chalé para Grupos = **20 hóspedes** (decisão da proprietária; Beds24 `maxPeople` = 20). Românticas 2 adultos + 2 crianças; Celeiro 11.
-4. Rotas públicas reais **não** usam disponibilidade de demonstração: a seção "Disponibilidade" mostra hóspedes + "Consultar
-   disponibilidade" (WhatsApp) + "Reservar" (motor Beds24, nova aba). O calendário de demonstração existe só nos previews.
+4. Rotas públicas reais **não** usam disponibilidade de demonstração: a seção "Reserve sua estadia" (id `disponibilidade`) mostra
+   hóspedes + "Combinar datas no WhatsApp" + "Reservar" (motor Beds24, nova aba). Home: CTAs levam à escolha da acomodação ("Ver
+   acomodações"); só a página de uma acomodação envia ao motor, com barra fixa de reserva no mobile (`stay-bar.tsx`; `viewport-fit=cover`
+   para a safe area). O "Reservar" do menu leva a `/acomodacoes` fora das páginas de acomodação. O calendário de demonstração existe só nos previews.
    `StayBooking` aceita `availability` (dados reais) para a Fase 3 sem refazer a página.
 5. Placeholders: "FOTO PENDENTE" + rótulo, gerados em SVG (sem rede). Substituem-se enviando a foto no Studio.
 6. Fontes provisórias D2 (Fraunces + Figtree no desktop, Bodoni Moda + Albert Sans no mobile), via Google Fonts; self-host antes do lançamento.
