@@ -17,6 +17,9 @@ type Props = {
 };
 
 export function SiteNav({ groups, contacts, links, moreLinks = [], booking, brandName = "Sítio Recanto Azul" }: Props) {
+  // Link para o motor (externo) abre em nova aba; link interno (escolha da acomodação) abre na mesma.
+  const external = /^https?:\/\//.test(booking);
+  const ext = external ? { target: "_blank", rel: "noopener noreferrer" } : {};
   const [open, setOpen] = useState<string | null>(null);
   const [menu, setMenu] = useState(false);
   const root = useRef<HTMLElement>(null);
@@ -84,7 +87,7 @@ export function SiteNav({ groups, contacts, links, moreLinks = [], booking, bran
           </div>,
         )}
         {links.map((l) => <a key={l.href} href={l.href}>{l.label}</a>)}
-        <a className="pd2-link" href={booking} target="_blank" rel="noopener noreferrer">Reservar<span className="sr"> (abre o motor de reservas em nova aba)</span></a>
+        <a className="pd2-link" href={booking} {...ext}>Reservar{external ? <span className="sr"> (abre o motor de reservas em nova aba)</span> : null}</a>
       </nav>
 
       <button type="button" className="pd2-menu-btn" onClick={() => setMenu(true)} aria-haspopup="dialog">Menu</button>
@@ -127,7 +130,7 @@ export function SiteNav({ groups, contacts, links, moreLinks = [], booking, bran
               </details>
             ) : null}
           </div>
-          <a className="book" href={booking} target="_blank" rel="noopener noreferrer">Reservar →</a>
+          <a className="book" href={booking} {...ext}>Reservar →</a>
         </div>
       ) : null}
     </>

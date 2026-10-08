@@ -106,3 +106,33 @@ test("prefers-reduced-motion: título do hero visível e sem zoom contínuo", as
   expect(anim).toBe("none");
   await ctx.close();
 });
+
+test("Home: CTAs honestos (sem 'Consultar disponibilidade'), pets em destaque e nenhum link direto ao Beds24", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("main")).not.toContainText("Consultar disponibilidade");
+  const cta = page.locator(".pd2-hero a", { hasText: "Ver acomodações" }).filter({ visible: true });
+  await expect(cta.first()).toHaveAttribute("href", "#acomodacoes");
+  await expect(page.locator(".pd2-intro .facts")).toContainText("Pets sem custo extra");
+  await expect(page.locator("a[href*='beds24.com']")).toHaveCount(0); // nem no menu: a Home leva à escolha da acomodação
+});
+
+test("acomodação: hero com Reservar (Beds24, nova aba) e barra fixa só no mobile", async ({ page, isMobile }) => {
+  await ready(page, "/acomodacoes/agata");
+  const hero = page.locator(".pd2-stay-cta").getByRole("link", { name: /Reservar/ });
+  await expect(hero).toHaveAttribute("href", /beds24\.com\/booking2\.php\?propid=357738&roomid=\d+/);
+  await expect(hero).toHaveAttribute("target", "_blank");
+  await expect(page.getByRole("heading", { name: "Reserve sua estadia" })).toBeVisible();
+  const bar = page.locator(".stay-bar");
+  if (!isMobile) {
+    await expect(bar).toBeHidden();
+    return;
+  }
+  await expect(bar).toHaveClass(/is-off/); // ainda no hero
+  await page.evaluate(() => window.scrollTo(0, window.innerHeight * 1.2));
+  await expect(bar).not.toHaveClass(/is-off/);
+  const box = await bar.getByRole("link", { name: /Reservar/ }).boundingBox();
+  expect(box!.height).toBeGreaterThanOrEqual(44);
+  await page.locator("#disponibilidade").scrollIntoViewIfNeeded();
+  await expect(bar).toHaveClass(/is-off/); // sem duplicar os botões da seção
+  await expect(page.locator(".wa-float:visible")).toHaveCount(0);
+});

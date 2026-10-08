@@ -51,7 +51,7 @@ export default async function StayPage({ params }: P) {
   };
 
   return (
-    <PageFrame direct={contact?.key} acomodacao={stay.name} stickyBar>
+    <PageFrame direct={contact?.key} acomodacao={stay.name} stickyBar booking={reserveHref}>
       <main id="conteudo">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
         <section className="pd2-hero pd2-stayhero">

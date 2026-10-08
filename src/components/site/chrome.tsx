@@ -1,5 +1,4 @@
 import { getChrome } from "@/lib/content/data";
-import { reserveUrl } from "@/lib/booking";
 import { HeaderShell } from "./header-shell";
 import { SiteNav } from "./nav";
 import { WhatsApp } from "./whatsapp";
@@ -17,7 +16,8 @@ export function Mark({ name }: { name: string }) {
 }
 
 /** Cabeçalho do site (menu desktop + menu mobile). Transparente sobre o hero; `solid` nas páginas internas. */
-export async function SiteHeader({ solid = false }: { solid?: boolean }) {
+/** `booking`: link do "Reservar" do menu. Sem ele (Home, páginas gerais) leva à escolha da acomodação; na página de uma acomodação, ao motor dela. */
+export async function SiteHeader({ solid = false, booking }: { solid?: boolean; booking?: string | null }) {
   const { settings, groups, contacts } = await getChrome();
   const grouped = groups
     .filter((g) => g.stays.length)
@@ -40,7 +40,7 @@ export async function SiteHeader({ solid = false }: { solid?: boolean }) {
           { label: "Perguntas frequentes", href: "/faq" },
           { label: "Contato", href: "/contato" },
         ]}
-        booking={reserveUrl(settings) ?? "/contato"}
+        booking={booking ?? "/acomodacoes"}
       />
     </HeaderShell>
   );
@@ -84,10 +84,10 @@ export async function FloatingWhatsApp({ direct, acomodacao }: { direct?: string
 }
 
 /** Moldura das páginas: cabeçalho, conteúdo, rodapé e WhatsApp flutuante. */
-export async function PageFrame({ children, solid = false, direct, acomodacao, stickyBar = false }: { children: React.ReactNode; solid?: boolean; direct?: string | null; acomodacao?: string; stickyBar?: boolean }) {
+export async function PageFrame({ children, solid = false, direct, acomodacao, stickyBar = false, booking }: { children: React.ReactNode; solid?: boolean; direct?: string | null; acomodacao?: string; stickyBar?: boolean; booking?: string | null }) {
   return (
     <>
-      <SiteHeader solid={solid} />
+      <SiteHeader solid={solid} booking={booking} />
       {children}
       <SiteFooter />
       {stickyBar ? (
