@@ -10,7 +10,8 @@ export function buildMetadata(opts: { title?: string | null; description?: strin
   const home = path === "/";
   const title = opts.title?.trim() || (home ? settings.seoTitle : null) || settings.siteName;
   const description = opts.description?.trim() || settings.seoDescription || undefined;
-  const image = opts.image && !opts.image.placeholder ? opts.image.full ?? opts.image.src : undefined;
+  const chosen = [opts.image, settings.seoImage].find((i) => i && !i.placeholder);
+  const image = chosen ? chosen.full ?? chosen.src : undefined;
   return {
     title: home ? { absolute: title } : title,
     description,

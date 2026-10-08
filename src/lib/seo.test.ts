@@ -22,6 +22,11 @@ describe("buildMetadata", () => {
     const m = buildMetadata({ path: "/", settings, image: { src: "data:x", alt: "", placeholder: true } });
     expect((m.openGraph as { images?: unknown }).images).toBeUndefined();
   });
+  it("sem imagem própria usa a imagem social padrão do site", () => {
+    const withDefault = normalizeSettings({ seoImage: { ref: "image-abc123-2400x1260-jpg" } });
+    const m = buildMetadata({ path: "/faq", title: "FAQ", settings: withDefault, image: { src: "data:x", alt: "", placeholder: true } });
+    expect((m.openGraph as { images: { url: string }[] }).images[0]!.url).toContain("abc123");
+  });
   it("imagem real vira og:image", () => {
     const m = buildMetadata({ path: "/", settings, image: { src: "https://cdn/x?w=800", full: "https://cdn/x?w=2400", alt: "" } });
     expect((m.openGraph as { images: { url: string }[] }).images[0]!.url).toBe("https://cdn/x?w=2400");

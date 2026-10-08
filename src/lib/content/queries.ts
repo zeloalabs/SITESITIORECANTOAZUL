@@ -10,7 +10,7 @@ const STAY_CARD = `
 export const SITE_QUERY = `{
   "settings": *[_type == "siteSettings"][0]{
     siteName, tagline, place, email, instagramUrl, address, mapsUrl, mapsEmbedUrl, galleryInitial,
-    seoTitle, seoDescription, beds24PropertyId, beds24Referer, bookingUrlOverride
+    seoTitle, seoDescription, "seoImage": seoImage ${IMG}, beds24PropertyId, beds24Referer, bookingUrlOverride
   },
   "contacts": *[_type == "whatsappContact"] | order(order asc){
     key, label, message, "number": coalesce(number, numberFrom->number)

@@ -16,6 +16,8 @@ export type SiteSettings = {
   galleryInitial: number;
   seoTitle: string | null;
   seoDescription: string | null;
+  /** Imagem social padrão; `null` enquanto não houver foto no CMS (placeholder nunca vira og:image). */
+  seoImage: Img | null;
   beds24PropertyId: number | null;
   beds24Referer: string;
   bookingUrlOverride: string | null;

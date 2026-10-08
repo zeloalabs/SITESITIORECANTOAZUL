@@ -33,7 +33,7 @@ export const DEFAULT_MAPS_URL = "https://www.google.com/maps/search/?api=1&query
 
 /* ---------- configurações e contatos ---------- */
 
-export type RawSettings = Partial<Omit<SiteSettings, "galleryInitial">> & { galleryInitial?: number | null };
+export type RawSettings = Partial<Omit<SiteSettings, "galleryInitial" | "seoImage">> & { galleryInitial?: number | null; seoImage?: RawImage };
 
 export function normalizeSettings(raw: Maybe<RawSettings>): SiteSettings {
   const r = raw ?? {};
@@ -50,6 +50,7 @@ export function normalizeSettings(raw: Maybe<RawSettings>): SiteSettings {
     galleryInitial: Number.isInteger(r.galleryInitial) && (r.galleryInitial as number) > 0 ? (r.galleryInitial as number) : 8,
     seoTitle: text(r.seoTitle) ?? null,
     seoDescription: text(r.seoDescription) ?? null,
+    seoImage: r.seoImage?.ref ? resolveImage(r.seoImage, { label: "Imagem social" }) : null,
     beds24PropertyId: Number.isInteger(r.beds24PropertyId) && (r.beds24PropertyId as number) > 0 ? (r.beds24PropertyId as number) : null,
     beds24Referer: clean(r.beds24Referer)?.trim() || "site-v2",
     bookingUrlOverride: clean(r.bookingUrlOverride) ?? null,

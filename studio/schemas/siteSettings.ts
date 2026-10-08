@@ -1,5 +1,5 @@
 import { defineField, defineType } from "sanity";
-import { validateHref } from "./fields";
+import { photoField, validateHref } from "./fields";
 
 export const siteSettings = defineType({
   name: "siteSettings",
@@ -24,6 +24,7 @@ export const siteSettings = defineType({
     defineField({ name: "galleryInitial", title: "Fotos visíveis antes de 'Ver todas'", type: "number", initialValue: 8, validation: (r) => r.integer().min(1).max(30) }),
     defineField({ name: "seoTitle", title: "SEO título padrão", type: "string", fieldset: "seo" }),
     defineField({ name: "seoDescription", title: "SEO descrição padrão", type: "text", rows: 3, fieldset: "seo" }),
+    photoField({ name: "seoImage", title: "Imagem para compartilhamento (padrão)", description: "Aparece ao compartilhar o site no WhatsApp, Instagram e Google quando a página não tem foto própria. Ideal: horizontal, 1200×630 ou maior.", fieldset: "seo" }),
     defineField({ name: "beds24PropertyId", title: "Beds24 propertyId", type: "number", fieldset: "beds24", validation: (r) => r.integer().positive() }),
     defineField({ name: "beds24Referer", title: "Beds24 referer", description: "Identifica reservas originadas no site.", type: "string", initialValue: "site-v2", fieldset: "beds24" }),
     defineField({ name: "bookingUrlOverride", title: "Link de reserva alternativo (opcional)", description: "Sem isto, o 'Reservar' abre o motor da Beds24 da propriedade.", type: "string", fieldset: "beds24", validation: (r) => r.custom((v) => validateHref(v as string | undefined)) }),
