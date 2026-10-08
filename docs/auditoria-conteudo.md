@@ -3,6 +3,9 @@
 Fontes: código atual, seed (`src/lib/content/seed.ts`), schemas do Studio, V1 (`archive/site-v1`), docs e `docs/fotos-referencias.md`. Nada foi inventado.
 Legenda: ✅ confirmado por fonte existente · 📝 precisa de revisão da proprietária · ❌ falta.
 
+> **Atualização 2026-10-08 (dados oficiais recebidos):** WhatsApp, Instagram, e-mail e link do Maps já estão na seed (ver `docs/fase2-implementacao.md`).
+> Seguem pendentes: endereço postal, políticas (`docs/politicas-pendentes.md`) e fotos (recuperação no Mac, `docs/fotos-referencias.md`). As linhas abaixo refletem a auditoria original.
+
 ## Dados do sítio
 
 | Item | Estado | Fonte / observação |

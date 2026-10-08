@@ -39,6 +39,23 @@ o site real vive em `src/app/(site)/*` e reaproveita os mesmos componentes e CSS
 Importar a seed no Sanity (**passo autorizado, escreve no dataset**): `node scripts/seed-sanity.mts` (simulação) e
 `SANITY_API_WRITE_TOKEN=… node scripts/seed-sanity.mts --apply`. Nunca sobrescreve edições (ver `planSeed`); `--force` substitui tudo.
 Fotos não fazem parte da seed (ver `docs/fotos-referencias.md`).
+Se `siteSettings`/`whatsappContact` já existirem no dataset, a seed os mantém e só **preenche contatos oficiais vazios** (`contactFill`, nunca sobrescreve; aparece como `preenche` na simulação).
+
+### Contatos oficiais (fonte única: Sanity → seed como base)
+
+| Dado | Documento / campo | Valor-base na seed |
+|---|---|---|
+| WhatsApp Românticas (Domo Estelar, Ágata, Mirante, Doce Recanto) | `whatsappContact` `romanticas` → `number` | `5548988445797` |
+| WhatsApp Para grupos (Celeiro, Chalé para Grupos) | `whatsappContact` `grupos` → `number` | `5548996620808` |
+| WhatsApp Casamentos | `whatsappContact` `casamentos` → `numberFrom` = grupos | herda `5548996620808` |
+| Instagram | `siteSettings.instagramUrl` | `https://www.instagram.com/sitiorecantoazul/` |
+| E-mail público | `siteSettings.email` | `sitiorecantoazulsc@gmail.com` |
+| Mapa / Como chegar | `siteSettings.mapsUrl` | `https://maps.app.goo.gl/7PnFkeAq9G3v4pa99?g_st=ic` |
+| Endereço postal | `siteSettings.address` | vazio (não confirmado) |
+
+Os componentes só leem esses campos; nenhum contato está fixo no código. `normalizeWhatsappNumber` (`src/lib/whatsapp.ts`) aceita número nacional ou
+com 55 e entrega sempre `55`+DDD+número, sem duplicar o país. O `mapsEmbedUrl` (mapa incorporado) é o do V1; o link curto do Maps não permite derivar outro embed,
+então confirmar que ele mostra o mesmo local.
 
 ### Decisões técnicas
 
@@ -70,8 +87,8 @@ Fotos não fazem parte da seed (ver `docs/fotos-referencias.md`).
 ## Pendências por dependência externa
 
 - **Fotos** (Biblioteca Oficial): enviar pelo Studio. Sem elas o site mostra placeholders.
-- **Números de WhatsApp** (Românticas, Para grupos; Casamentos herda de Para grupos): preencher em `whatsappContact`.
 - **Sanity** (token de escrita) para rodar a seed e confirmar o fluxo com dados reais; Studio precisa ser reimplantado com os novos schemas.
 - **Cloudflare**: re-medir CPU (Home real, HIT/MISS/frio) no preview antes de decidir Workers Paid. Bundle do Worker ≈ 700 KiB gzip (era 560).
-- **Instagram, e-mail oficial, endereço**: campos de `siteSettings` (hoje só o e-mail do V1 e o mapa).
+- **Endereço postal**: `siteSettings.address` segue vazio (nada inventado); o site mostra "Alfredo Wagner, Santa Catarina" e o link oficial do Maps.
+- **Políticas** (check-in/out, cancelamento, pagamento…): `docs/politicas-pendentes.md`.
 - **Fase 3** (Beds24 ao vivo): `/api/quote`, calendário real, "a partir de", validação API × checkout.

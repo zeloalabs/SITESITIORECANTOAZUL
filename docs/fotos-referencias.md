@@ -71,3 +71,18 @@ arquivos foram perdidos (viraram `NN.jpg`), então a ordem original só se recup
   (a mesma de `acomodacoes.md`, também fora do repositório). Nenhum commit contém `public/design-previews`.
 - Recuperar: (1) localizar a pasta "Biblioteca Oficial" (provavelmente no computador/nuvem da proprietária); (2) usar `web-avif` ou `master` + `manifest.json`; (3) casar pelos nomes desta tabela;
   (4) enviar pelo Studio (ou pela API de assets do Sanity). Ver o V1 não ajuda: ele só tinha SVGs de placeholder.
+
+### Recuperação no Mac local (decisão de 2026-10-08)
+
+A Biblioteca Oficial ficou **somente no Mac local** usado antes; a sessão em nuvem não a alcança e **nenhuma foto foi baixada, inventada ou substituída**.
+O site continua com placeholders identificáveis ("FOTO PENDENTE") e toda a estrutura do Sanity pronta; nada nas páginas precisa ser refeito quando as fotos chegarem.
+
+No Mac, localizar e guardar (fora do Git):
+1. A pasta da Biblioteca Oficial com `web-avif/` e `master/` e o `manifest.json` (**copiar o arquivo original e mostrar seu formato real**).
+2. `public/design-previews/` do clone antigo (`photos/*.avif`, `stays/<slug>/NN.jpg`, `extras/*.jpg`) — são as cópias usadas nos previews.
+3. O `acomodacoes.md` (fonte dos textos).
+
+Depois, o mapeamento é o das tabelas acima: arquivo → campo do Studio (capa → `coverImage`; demais, na ordem → `gallery`; ponto focal no hotspot; alt escrito por foto).
+**Script de importação:** ainda não foi criado de propósito. O formato do `manifest.json` antigo é desconhecido e não vamos inventar um novo. Quando o arquivo for recuperado,
+o script (`scripts/import-photos.mts`) deve nascer assim: lê o manifest real → relaciona arquivos a acomodações/páginas pelos nomes desta tabela → valida arquivos ausentes →
+imprime o plano de upload → **só grava com `--apply`** e `SANITY_API_WRITE_TOKEN` (simulação por padrão, como `scripts/seed-sanity.mts`), sem sobrescrever fotos já enviadas no Studio.
