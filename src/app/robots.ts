@@ -1,12 +1,9 @@
 import type { MetadataRoute } from "next";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://sitiorecantoazul.com.br";
+import { siteUrl } from "@/lib/seo";
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: [
-      { userAgent: "*", allow: "/", disallow: "/admin" },
-    ],
+    rules: { userAgent: "*", allow: "/", disallow: ["/api/", "/design-previews/", "/e2e/"] },
     sitemap: `${siteUrl}/sitemap.xml`,
   };
 }

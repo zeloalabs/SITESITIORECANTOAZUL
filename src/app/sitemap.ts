@@ -1,33 +1,12 @@
 import type { MetadataRoute } from "next";
-import { getAccommodations, getPublishedPageSlugs } from "@/lib/data";
+import { getChrome, getPageSlugs } from "@/lib/content/data";
+import { sitemapPaths } from "@/lib/sitemap";
+import { siteUrl } from "@/lib/seo";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://sitiorecantoazul.com.br";
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [accommodations, pageSlugs] = await Promise.all([getAccommodations(), getPublishedPageSlugs()]);
-  const staticRoutes = [
-    "",
-    "/acomodacoes",
-    "/experiencias",
-    "/sobre",
-    "/localizacao",
-    "/faq",
-    "/contato",
-    "/politicas",
-  ].map((path) => ({
-    url: `${siteUrl}${path}`,
-    lastModified: new Date(),
-  }));
-
-  const accommodationRoutes = accommodations.map((a) => ({
-    url: `${siteUrl}/acomodacoes/${a.slug}`,
-    lastModified: new Date(),
-  }));
-
-  const pageRoutes = pageSlugs.map((slug) => ({
-    url: `${siteUrl}/${slug}`,
-    lastModified: new Date(),
-  }));
-
-  return [...staticRoutes, ...accommodationRoutes, ...pageRoutes];
+  const [{ groups }, pageSlugs] = await Promise.all([getChrome(), getPageSlugs()]);
+  const stayPaths = groups.flatMap((g) => g.stays.map((s) => `/acomodacoes/${s.slug}`));
+  return sitemapPaths({ pageSlugs, stayPaths }).map((p) => ({ url: `${siteUrl}${p === "/" ? "" : p}` }));
 }
