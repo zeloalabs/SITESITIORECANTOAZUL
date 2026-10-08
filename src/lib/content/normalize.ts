@@ -219,6 +219,7 @@ type RawSection = {
   body?: unknown;
   eyebrow?: string | null;
   showSearch?: boolean | null;
+  facts?: string[] | null;
   image?: RawImage;
   reviewId?: string | null;
   photos?: (RawImage | { image?: RawImage; caption?: string | null })[] | null;
@@ -248,6 +249,7 @@ export function normalizeSection(raw: RawSection): Section | null {
       if (!raw.title) return null;
       return {
         _type: "intro", _key, title: raw.title, text: text(raw.text),
+        facts: (raw.facts ?? []).map((f) => text(f)).filter((f): f is string => !!f),
         photos: (raw.photos ?? []).slice(0, 2).map((p, i) => {
           const o = p as { image?: RawImage; caption?: string | null };
           return { image: resolveImage(o.image, { label: o.caption ?? `Introdução — foto ${i + 1}`, alt: o.caption ?? undefined }), caption: text(o.caption) };

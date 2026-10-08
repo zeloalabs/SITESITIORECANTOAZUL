@@ -741,3 +741,6 @@ html:has(.pd2) { scrollbar-color: rgba(243, 237, 224, .28) #070d1f; scrollbar-wi
 @media (max-width: 899px) { .wa-float-desktop { display: none; } }
 @media (min-width: 900px) { .wa-float-desktop { display: contents; } }
 @media (prefers-reduced-motion: reduce) { .stay-bar, .stay-bar.is-off { transition: none; } }
+
+/* Fatos em destaque da introdução (ex.: pets sem custo extra) */
+.pd2-intro .facts { list-style: none; margin: 26px 0 0; padding: 14px 0 0; border-top: 1px solid currentColor; border-color: color-mix(in srgb, currentColor 22%, transparent); display: flex; flex-wrap: wrap; gap: 6px 28px; font-size: 15px; }

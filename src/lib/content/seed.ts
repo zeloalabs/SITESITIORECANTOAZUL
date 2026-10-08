@@ -36,19 +36,19 @@ const stays: StaySeed[] = [
   },
   {
     slug: "agata", name: "Ágata", group: "romanticas", order: 1, roomId: 737422, occupancy: 2, guests: ROMANTICA,
-    tagline: "Hidro com vista e rede horizontal para dias lentos",
+    tagline: "Hidromassagem com vista e rede horizontal para dias lentos",
     detail: "Acomodação romântica pensada para quem busca sossego: hidromassagem com vista e uma rede horizontal para tardes sem pressa.",
     amenities: ["Hidromassagem com vista", "Rede horizontal"],
   },
   {
     slug: "mirante", name: "Mirante", group: "romanticas", order: 2, roomId: 737427, occupancy: 2, guests: ROMANTICA,
-    tagline: "Hidro com vista panorâmica e rede horizontal",
+    tagline: "Hidromassagem com vista panorâmica e rede horizontal",
     detail: "Acomodação romântica com hidromassagem de vista panorâmica e rede horizontal, para acompanhar o fim de tarde com calma.",
     amenities: ["Hidromassagem com vista panorâmica", "Rede horizontal"],
   },
   {
     slug: "doce-recanto", name: "Doce Recanto", group: "romanticas", order: 3, roomId: 737430, occupancy: 2, guests: ROMANTICA,
-    tagline: "Hidro interna para uma estadia intimista",
+    tagline: "Hidromassagem interna para uma estadia intimista",
     detail: "Acomodação romântica e intimista, com hidromassagem interna, para uma pausa a dois.",
     amenities: ["Hidromassagem interna"],
   },
@@ -143,6 +143,7 @@ export const seedDocuments: SeedDoc[] = [
       {
         _key: key("s"), _type: "intro", title: "Natureza, privacidade e tempo para o que importa",
         text: "O Sítio Recanto Azul reúne acomodações pensadas para casais e grupos que buscam uma pausa real.",
+        facts: ["Pets sem custo extra"],
         photos: [{ _key: key("p"), caption: "Chalé Mirante" }, { _key: key("p"), caption: "Passeio a cavalo" }],
       },
       { _key: key("s"), _type: "acomodacoes", title: "Acomodações" },
@@ -150,7 +151,7 @@ export const seedDocuments: SeedDoc[] = [
         _key: key("s"), _type: "blocosDestaque", title: "Extras e casamentos",
         tiles: [
           { _key: key("t"), title: "Extras", text: "Decorações, pedidos de casamento e café da manhã.", href: "/extras" },
-          { _key: key("t"), title: "Casamentos no sítio", text: "Fale com a gente sobre o seu casamento.", href: "/casamentos" },
+          { _key: key("t"), title: "Casamentos", text: "Fale com a gente sobre o seu casamento.", href: "/casamentos" },
         ],
       },
       { _key: key("s"), _type: "fotoCheia", caption: "Vista a partir do Chalé para Grupos" },
@@ -187,9 +188,9 @@ export const seedDocuments: SeedDoc[] = [
     seoTitle: "Experiências", seoDescription: "Pôr do sol no mirante, balanços, piquenique e passeio a cavalo no Sítio Recanto Azul.",
   },
   {
-    _id: "page-casamentos", _type: "page", title: "Casamentos no sítio", slug: slug("casamentos"),
+    _id: "page-casamentos", _type: "page", title: "Casamentos", slug: slug("casamentos"),
     sections: [
-      { _key: key("s"), _type: "cabecalhoPagina", title: "Casamentos no sítio", lead: "Fale com a gente sobre o seu casamento.", whatsappKey: "casamentos", whatsappLabel: "Falar pelo WhatsApp" },
+      { _key: key("s"), _type: "cabecalhoPagina", title: "Casamentos", lead: "Fale com a gente sobre o seu casamento.", whatsappKey: "casamentos", whatsappLabel: "Falar pelo WhatsApp" },
       {
         _key: key("s"), _type: "textoComFoto", title: "O sítio para o seu casamento",
         body: "O Recanto Azul reúne espaços pensados para grupos e celebrações, como o galpão de festas do Chalé para Grupos e o pergolado de vidro do Celeiro, em meio à natureza de Alfredo Wagner.\n\nConte para a gente a data, o número de convidados e o que você imagina para o seu dia. Respondemos pelo WhatsApp com as possibilidades.",

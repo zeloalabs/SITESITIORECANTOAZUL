@@ -36,7 +36,7 @@ export const ACCOMMODATION_QUERY = `*[_type == "accommodation" && slug.current =
 export const ACCOMMODATION_SLUGS_QUERY = `*[_type == "accommodation" && defined(slug.current)].slug.current`;
 
 const SECTIONS = `sections[]{
-  _key, _type, title, lead, text, note, caption, linkLabel, linkHref, whatsappKey, whatsappLabel, onlyHome, body, eyebrow, showSearch,
+  _key, _type, title, lead, text, note, caption, linkLabel, linkHref, whatsappKey, whatsappLabel, onlyHome, body, eyebrow, showSearch, facts,
   "image": image ${IMG},
   "reviewId": review._ref,
   _type == "intro" => { "photos": photos[]{ "image": image ${IMG}, caption } },

@@ -9,6 +9,7 @@ export function Intro({ section }: { section: IntroSection }) {
         <div className="pd2-intro-copy">
           <Reveal as="h2">{section.title}</Reveal>
           {section.text ? <Reveal as="p" className="body" delay={150}>{section.text}</Reveal> : null}
+          {section.facts.length ? <ul className="facts">{section.facts.map((f) => <li key={f}>{f}</li>)}</ul> : null}
         </div>
         {section.photos.length ? (
           <div className="pd2-intro-ph">
