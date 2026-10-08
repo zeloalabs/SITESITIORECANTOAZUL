@@ -3,6 +3,10 @@
 Fonte da verdade do projeto: `docs/superpowers/specs/2026-10-01-site-v2-design.md`.
 Plano em execução: `docs/superpowers/plans/2026-10-01-site-v2-fase1-fundacao.md`.
 
+## Estado do código
+- Site real: `src/app/(site)/*`; componentes em `src/components/{site,sections}`; conteúdo em `src/lib/content/`.
+  Previews (`/design-previews/*`) são só referência visual. Visão geral: `docs/fase2-implementacao.md`.
+
 ## Git
 1. Repo canônico: `zeloalabs/SITESITIORECANTOAZUL`.
 2. Nunca push direto em `main`. Desenvolvimento na branch `v2` (ou branches curtas com merge em `v2`).

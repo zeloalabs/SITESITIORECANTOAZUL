@@ -58,3 +58,7 @@ next-env.d.ts
 
 # local dev tools
 .serena/
+
+# previews de design (Fase 2): capturas/vídeos e fotos copiadas da Biblioteca Oficial (pesados, ficam só locais)
+docs/design-previews/
+public/design-previews/

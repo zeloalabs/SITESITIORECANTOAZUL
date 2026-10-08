@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect } from "vitest";
-import { bookingUrl } from "./booking-url";
+import { bookingUrl, propertyBookingUrl } from "./booking-url";
 
 describe("bookingUrl", () => {
   it("without a search, preselects only property and room, plus referer", () => {
@@ -42,5 +42,14 @@ describe("bookingUrl", () => {
   it("defaults referer to site-v2 when not specified", () => {
     const url = new URL(bookingUrl({ propId: 111, roomId: 222 }));
     expect(url.searchParams.get("referer")).toBe("site-v2");
+  });
+});
+
+describe("propertyBookingUrl", () => {
+  it("monta o link do motor sem quarto nem datas", () => {
+    expect(propertyBookingUrl({ propId: 357738, referer: "site-v2" })).toBe("https://beds24.com/booking2.php?propid=357738&referer=site-v2");
+  });
+  it("usa o referer padrão", () => {
+    expect(propertyBookingUrl({ propId: 1 })).toContain("referer=site-v2");
   });
 });

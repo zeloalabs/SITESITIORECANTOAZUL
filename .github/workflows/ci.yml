@@ -1,0 +1,69 @@
+name: CI
+
+# Verificações rápidas e sem secrets. e2e (Playwright) ficam fora desta versão: dependem de servidor e navegador.
+on:
+  pull_request:
+  push:
+    branches: [feat/site-real-d2, v2]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Testes unitários
+        run: npm test
+      - name: Build (Next.js)
+        run: npm run build
+      - name: Build (Worker)
+        run: npm run build:vinext
+
+  # Job separado: mais lento (navegador) e independente do `check`. Sem secrets: o site roda com o conteúdo-base (fallback).
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Cache do Chromium
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Instalar Chromium e dependências do sistema
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Dependências do sistema (Chromium em cache)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+      - name: e2e (desktop e mobile)
+        run: npm run e2e
+      - name: Relatório em caso de falha
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: test-results/
+          retention-days: 7

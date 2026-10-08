@@ -17,3 +17,11 @@ export function bookingUrl(opts: { propId: number; roomId: number; referer?: str
   params.set("referer", opts.referer ?? DEFAULT_REFERER);
   return `${BOOKING_PAGE}?${params.toString()}`;
 }
+
+/** Motor de reservas da propriedade (sem quarto nem datas). Só um link: o site nunca cria reserva. */
+export function propertyBookingUrl(opts: { propId: number; referer?: string }): string {
+  const params = new URLSearchParams();
+  params.set("propid", String(opts.propId));
+  params.set("referer", opts.referer ?? DEFAULT_REFERER);
+  return `${BOOKING_PAGE}?${params.toString()}`;
+}

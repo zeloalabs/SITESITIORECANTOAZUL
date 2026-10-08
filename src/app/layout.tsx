@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { draftMode } from "next/headers";
 import { VisualEditing } from "next-sanity/visual-editing";
 import { SanityLive } from "@/lib/content/client";
+import { siteUrl } from "@/lib/seo";
 import "./globals.css";
 
 // Render sempre por requisição na origem: o cache em memória do vinext é por isolate e não é
@@ -10,9 +11,13 @@ import "./globals.css";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Sítio Recanto Azul",
+  metadataBase: new URL(siteUrl),
+  title: { default: "Sítio Recanto Azul", template: "%s | Sítio Recanto Azul" },
   description: "Hospedagem em Alfredo Wagner/SC.",
 };
+
+// viewport-fit=cover: necessário para `env(safe-area-inset-*)` (barra fixa de reserva no iPhone).
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export default async function RootLayout({
   children,

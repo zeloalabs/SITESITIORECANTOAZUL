@@ -5,6 +5,12 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  // Links do site usam <a> simples de propósito: navegação completa serve a página do Workers Cache e evita o
+  // prefetch RSC, que sempre renderiza no gateway (sem cache) e gasta CPU do Workers Free (docs/infra-medicoes.md).
+  {
+    files: ["src/components/**/*.{ts,tsx}", "src/app/(site)/**/*.{ts,tsx}"],
+    rules: { "@next/next/no-html-link-for-pages": "off" },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
