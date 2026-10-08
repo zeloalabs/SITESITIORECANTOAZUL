@@ -1,5 +1,13 @@
 import type { WhatsAppContact } from "@/lib/content/types";
 
+/** Número no formato do wa.me (55 + DDD + número, só dígitos). Aceita nacional ou internacional, sem duplicar o 55; `null` se inválido. */
+export function normalizeWhatsappNumber(value: string | null | undefined): string | null {
+  const digits = (value ?? "").replace(/\D/g, "");
+  if (/^\d{10,11}$/.test(digits)) return `55${digits}`;
+  if (/^55\d{10,11}$/.test(digits)) return digits;
+  return null;
+}
+
 /** Link wa.me do contato; `null` se o número ainda não foi cadastrado. `{acomodacao}` na mensagem vira o nome da acomodação. */
 export function whatsappUrl(contact: Pick<WhatsAppContact, "number" | "message"> | undefined | null, vars: { acomodacao?: string; extra?: string } = {}): string | null {
   if (!contact?.number || !/^\d{12,13}$/.test(contact.number)) return null;

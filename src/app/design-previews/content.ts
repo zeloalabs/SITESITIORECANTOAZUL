@@ -20,7 +20,7 @@ export const brand = {
   manifesto: "Mais do que hospedagem, o Recanto Azul é um convite à experiência.",
   cta: "Escolha sua acomodação e reserve seu tempo de descanso.",
   ctaTitle: "Pronto para desacelerar?",
-  email: "contato@sitiorecantoazul.com.br",
+  email: "sitiorecantoazulsc@gmail.com",
 };
 
 export type Stay = {

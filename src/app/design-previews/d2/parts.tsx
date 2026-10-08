@@ -73,7 +73,7 @@ export function Footer() {
       <div className="col">
         <h3>Contato</h3>
         <ul>
-          <li><a href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+          <li><a href="https://www.instagram.com/sitiorecantoazul/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
           <li><a href="#whatsapp-geral">WhatsApp</a></li>
           <li><a href={siteLinks.politicas}>Perguntas frequentes</a></li>
         </ul>

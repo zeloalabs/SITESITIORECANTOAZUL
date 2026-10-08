@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("./client", () => ({ sanityFetch: vi.fn() }));
 
 import { createContent, seedFetcher, type Fetcher } from "./data";
+import { pickContact, whatsappUrl } from "../whatsapp";
 
 const down: Fetcher = async () => null;
 const content = createContent(down, seedFetcher);
@@ -24,7 +25,30 @@ describe("conteúdo-base (fallback) avaliado com a mesma GROQ", () => {
   it("contatos: Casamentos herda o número de Para grupos; sem número cadastrado fica null (sem inventar)", async () => {
     const { contacts } = await content.chrome();
     expect(contacts.map((c) => c.key)).toEqual(["romanticas", "grupos", "casamentos"]);
-    expect(contacts.every((c) => c.number === null)).toBe(true);
+    expect(contacts.map((c) => c.number)).toEqual(["5548988445797", "5548996620808", "5548996620808"]);
+  });
+
+  it("WhatsApp por acomodação: românticas → número das românticas; Celeiro, Chalé e Casamentos → grupos", async () => {
+    const { contacts, groups } = await content.chrome();
+    const numberOf = (key: string | undefined) => contacts.find((c) => c.key === key)?.number;
+    for (const g of groups) for (const s of g.stays) {
+      const href = whatsappUrl(pickContact(contacts, [g.whatsappKey]), { acomodacao: s.name })!;
+      const expected = g.id === "romanticas" ? "5548988445797" : "5548996620808";
+      expect(href, s.name).toMatch(new RegExp(`^https://wa\\.me/${expected}\\?text=`));
+      expect(decodeURIComponent(href)).toContain("Sítio Recanto Azul");
+    }
+    expect(groups.map((g) => [g.id, numberOf(g.whatsappKey)])).toEqual([["romanticas", "5548988445797"], ["grupos", "5548996620808"]]);
+    const casamentos = await content.page("casamentos");
+    const header = casamentos!.sections.find((s) => s._type === "cabecalhoPagina") as { whatsappKey?: string };
+    expect(numberOf(header.whatsappKey)).toBe("5548996620808");
+  });
+
+  it("contatos oficiais: Instagram, Maps e e-mail", async () => {
+    const { settings } = await content.chrome();
+    expect(settings.instagramUrl).toBe("https://www.instagram.com/sitiorecantoazul/");
+    expect(settings.mapsUrl).toBe("https://maps.app.goo.gl/7PnFkeAq9G3v4pa99?g_st=ic");
+    expect(settings.email).toBe("sitiorecantoazulsc@gmail.com");
+    expect(settings.address).toBeNull(); // sem endereço postal confirmado: nada inventado
   });
 
   it("capacidades corretas: românticas 2+2, Celeiro 11, Chalé para Grupos 20", async () => {

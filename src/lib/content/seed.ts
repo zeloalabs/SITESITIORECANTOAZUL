@@ -78,8 +78,10 @@ export const seedDocuments: SeedDoc[] = [
     siteName: "Sítio Recanto Azul",
     tagline: "Natureza, privacidade e experiências para casais e grupos",
     place: "Alfredo Wagner · SC",
-    email: "contato@sitiorecantoazul.com.br",
-    mapsUrl: "https://www.google.com/maps/place/sitio+recanto+azul/data=!4m2!3m1!1s0x952089648e85adf1:0x40c0563dd95106c1",
+    email: "sitiorecantoazulsc@gmail.com",
+    instagramUrl: "https://www.instagram.com/sitiorecantoazul/",
+    // Link oficial do Maps. Endereço postal ainda não confirmado: `address` fica vazio (nada é inventado).
+    mapsUrl: "https://maps.app.goo.gl/7PnFkeAq9G3v4pa99?g_st=ic",
     mapsEmbedUrl: "https://maps.google.com/maps?cid=4665824037594793665&hl=pt-BR&z=14&output=embed",
     galleryInitial: 8,
     seoTitle: "Sítio Recanto Azul — hospedagem em Alfredo Wagner, SC",
@@ -87,9 +89,9 @@ export const seedDocuments: SeedDoc[] = [
     beds24PropertyId: 357738,
     beds24Referer: "site-v2",
   },
-  // Números ainda não informados: a proprietária preenche no Studio. Sem número, o site esconde o WhatsApp em produção.
-  wa("romanticas", "Românticas", "Olá! Tenho interesse em uma acomodação romântica do Sítio Recanto Azul.", 0),
-  wa("grupos", "Para grupos", "Olá! Tenho interesse em uma acomodação para grupos do Sítio Recanto Azul.", 1),
+  // Números oficiais (55 + DDD + número). Casamentos herda o de Para grupos. Editáveis no Studio (`whatsappContact`).
+  wa("romanticas", "Românticas", "Olá! Tenho interesse em uma acomodação romântica do Sítio Recanto Azul.", 0, { number: "5548988445797" }),
+  wa("grupos", "Para grupos", "Olá! Tenho interesse em uma acomodação para grupos do Sítio Recanto Azul.", 1, { number: "5548996620808" }),
   wa("casamentos", "Casamentos", "Olá! Quero conversar sobre um casamento no Sítio Recanto Azul.", 2, { numberFrom: ref("whatsappContact-grupos") }),
   { _id: "accommodationGroup-romanticas", _type: "accommodationGroup", name: "Românticas", slug: slug("romanticas"), order: 0, showOnHome: true, whatsapp: ref("whatsappContact-romanticas") },
   { _id: "accommodationGroup-grupos", _type: "accommodationGroup", name: "Para grupos", slug: slug("grupos"), order: 1, showOnHome: true, whatsapp: ref("whatsappContact-grupos") },
@@ -125,7 +127,7 @@ export const seedDocuments: SeedDoc[] = [
   ].map(([question, answer], i): SeedDoc => ({ _id: `faq-${i + 1}`, _type: "faq", question, answer, order: i })),
   {
     _id: "policy-privacidade", _type: "policy", title: "Política de privacidade", anchor: slug("privacidade"), order: 0,
-    body: "Este site não possui formulários nem área de cadastro: não coletamos dados pessoais diretamente por ele.\n\nO mapa só é carregado quando você clica em “Ver mapa”; nesse momento o Google pode usar cookies. Ao abrir o WhatsApp ou o motor de reservas (Beds24), você passa a ser atendido por esses serviços, que têm as suas próprias políticas de privacidade.\n\nPara dúvidas sobre dados pessoais, escreva para contato@sitiorecantoazul.com.br.",
+    body: "Este site não possui formulários nem área de cadastro: não coletamos dados pessoais diretamente por ele.\n\nO mapa só é carregado quando você clica em “Ver mapa”; nesse momento o Google pode usar cookies. Ao abrir o WhatsApp ou o motor de reservas (Beds24), você passa a ser atendido por esses serviços, que têm as suas próprias políticas de privacidade.\n\nPara dúvidas sobre dados pessoais, escreva para sitiorecantoazulsc@gmail.com.",
   },
   {
     _id: "policy-hospedagem", _type: "policy", title: "Política de hospedagem", anchor: slug("hospedagem"), order: 1,

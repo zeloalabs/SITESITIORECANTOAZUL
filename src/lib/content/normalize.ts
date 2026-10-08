@@ -1,6 +1,7 @@
 // Converte o que a GROQ devolve (campos opcionais, imagens cruas) nos tipos fortes do site. Puro e testável.
 import { stegaClean } from "next-sanity";
 import { resolveImage, type RawImage } from "@/lib/images";
+import { normalizeWhatsappNumber } from "@/lib/whatsapp";
 import type {
   Accommodation,
   AccommodationCard,
@@ -64,7 +65,7 @@ export function normalizeContacts(raw: Maybe<RawContact[]>): WhatsAppContact[] {
     .filter((c) => c.key && c.label)
     .map((c) => {
       const number = clean(c.number)?.replace(/\D/g, "") ?? "";
-      return { key: clean(c.key)!, label: c.label!, message: c.message ?? "", number: /^\d{12,13}$/.test(number) ? number : null };
+      return { key: clean(c.key)!, label: c.label!, message: c.message ?? "", number: normalizeWhatsappNumber(number) };
     });
 }
 

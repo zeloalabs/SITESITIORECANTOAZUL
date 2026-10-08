@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pickContact, whatsappUrl } from "./whatsapp";
+import { normalizeWhatsappNumber, pickContact, whatsappUrl } from "./whatsapp";
 
 const c = (key: string, number: string | null, message = "Olá!") => ({ key, label: key, number, message });
 
@@ -31,5 +31,23 @@ describe("pickContact", () => {
   });
   it("devolve undefined se nada casa", () => {
     expect(pickContact(list, ["x"])).toBeUndefined();
+  });
+});
+
+describe("normalizeWhatsappNumber", () => {
+  it("acrescenta 55 a número nacional (DDD + número)", () => {
+    expect(normalizeWhatsappNumber("48988445797")).toBe("5548988445797");
+    expect(normalizeWhatsappNumber("(48) 98844-5797")).toBe("5548988445797");
+  });
+  it("não duplica o código do país", () => {
+    expect(normalizeWhatsappNumber("5548988445797")).toBe("5548988445797");
+    expect(normalizeWhatsappNumber("+55 48 98844-5797")).toBe("5548988445797");
+  });
+  it("aceita fixo (10 dígitos) e rejeita o que não é número brasileiro plausível", () => {
+    expect(normalizeWhatsappNumber("4833334444")).toBe("554833334444");
+    expect(normalizeWhatsappNumber("123")).toBeNull();
+    expect(normalizeWhatsappNumber("")).toBeNull();
+    expect(normalizeWhatsappNumber(null)).toBeNull();
+    expect(normalizeWhatsappNumber("14155550123")).toBe("5514155550123"); // 11 dígitos = DDD 14 + celular; não é detectável como estrangeiro
   });
 });

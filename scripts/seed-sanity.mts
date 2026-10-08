@@ -2,13 +2,14 @@
 //
 //   node scripts/seed-sanity.mts                -> simulação (não escreve nada)
 //   node scripts/seed-sanity.mts --apply    -> grava (exige SANITY_API_WRITE_TOKEN no ambiente)
+//   (documentos já existentes são mantidos; só contatos oficiais vazios são preenchidos)
 //   ... --force                                -> também substitui documentos já editados (cuidado)
 //
 // PASSO AUTORIZADO PELA PROPRIETÁRIA: escreve no dataset de produção. O token de escrita fica só no ambiente local.
 // Fotos não fazem parte da seed: envie-as pelo Studio.
 import { createClient } from "@sanity/client";
 import { seedDocuments } from "../src/lib/content/seed.ts";
-import { planSeed } from "../src/lib/content/seed-plan.ts";
+import { contactFill, planSeed } from "../src/lib/content/seed-plan.ts";
 
 const apply = process.argv.includes("--apply");
 const force = process.argv.includes("--force");
@@ -31,6 +32,14 @@ for (const doc of seedDocuments) {
   console.log(`${action.padEnd(8)} ${doc._id}`);
   if (action === "create") tx.createIfNotExists(doc);
   if (action === "replace") tx.createOrReplace(doc);
+  if (action === "skip" && existing) {
+    // Mantém o documento, mas preenche contatos oficiais que estejam vazios (nunca sobrescreve).
+    const fill = contactFill(existing as Record<string, unknown>, doc);
+    if (Object.keys(fill).length) {
+      console.log(`${"preenche".padEnd(8)} ${doc._id}: ${Object.keys(fill).join(", ")}`);
+      tx.patch(doc._id, { set: fill });
+    }
+  }
 }
 if (apply) {
   const res = await tx.commit();

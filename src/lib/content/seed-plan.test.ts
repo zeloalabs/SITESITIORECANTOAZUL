@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { planSeed } from "./seed-plan";
+import { contactFill, planSeed } from "./seed-plan";
 import { seedDocuments } from "./seed";
 
 const doc = (id: string) => seedDocuments.find((d) => d._id === id)!;
@@ -41,9 +41,26 @@ describe("seed", () => {
     walk(seedDocuments);
     for (const r of refs) expect(ids).toContain(r);
   });
-  it("não contém preço nem número de telefone inventado", () => {
+  it("não contém preço nem número de telefone além dos oficiais", () => {
     const json = JSON.stringify(seedDocuments);
     expect(json).not.toMatch(/R\$/);
-    expect(json).not.toMatch(/"number":/);
+    // únicos números permitidos: os dois WhatsApps oficiais informados pela proprietária
+    const numbers = [...json.matchAll(/"number":"(\d+)"/g)].map((m) => m[1]);
+    expect(numbers.sort()).toEqual(["5548988445797", "5548996620808"]);
+  });
+});
+
+describe("contactFill", () => {
+  const settings = { _id: "siteSettings", _type: "siteSettings", email: "a@b.c", instagramUrl: "https://www.instagram.com/x/", mapsUrl: "https://maps.app.goo.gl/x", siteName: "S" };
+  it("preenche só contatos que faltam no documento existente, sem sobrescrever", () => {
+    expect(contactFill({ siteName: "Antigo", email: "editado@x.com" }, settings)).toEqual({ instagramUrl: settings.instagramUrl, mapsUrl: settings.mapsUrl });
+  });
+  it("whatsappContact existente sem número recebe o número oficial", () => {
+    const doc = { _id: "whatsappContact-grupos", _type: "whatsappContact", key: "grupos", number: "5548996620808" };
+    expect(contactFill({ key: "grupos" }, doc)).toEqual({ number: "5548996620808" });
+    expect(contactFill({ key: "grupos", number: "5548000000000" }, doc)).toEqual({});
+  });
+  it("outros tipos de documento nunca são preenchidos", () => {
+    expect(contactFill({}, { _id: "faq-1", _type: "faq", question: "?" })).toEqual({});
   });
 });

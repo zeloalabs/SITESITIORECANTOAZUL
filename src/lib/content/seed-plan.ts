@@ -20,3 +20,23 @@ export function planSeed(existing: Record<string, unknown> | null | undefined, d
   }
   return "skip";
 }
+
+const CONTACT_FIELDS: Record<string, readonly string[]> = {
+  siteSettings: ["email", "instagramUrl", "mapsUrl"],
+  whatsappContact: ["number", "numberFrom"],
+};
+
+/**
+ * Campos de contato oficiais que faltam num documento existente (setIfMissing): preenche o vazio, nunca sobrescreve.
+ * `planSeed` mantém o documento ("skip"); esta função complementa só os contatos.
+ */
+export function contactFill(existing: Record<string, unknown>, doc: SeedDoc): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const field of CONTACT_FIELDS[doc._type] ?? []) {
+    const missing = existing[field] === undefined || existing[field] === null || existing[field] === "";
+    if (missing && doc[field] !== undefined) out[field] = doc[field];
+  }
+  // `numberFrom` e `number` são alternativos: se já herda de outro contato, não acrescenta número.
+  if (doc._type === "whatsappContact" && existing.numberFrom) delete out.number;
+  return out;
+}

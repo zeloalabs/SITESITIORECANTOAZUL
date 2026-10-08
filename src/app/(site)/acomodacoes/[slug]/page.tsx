@@ -48,6 +48,9 @@ export default async function StayPage({ params }: P) {
     description: stay.tagline,
     image: stay.cover.placeholder ? undefined : stay.cover.full ?? stay.cover.src,
     address: { "@type": "PostalAddress", addressLocality: "Alfredo Wagner", addressRegion: "SC", addressCountry: "BR" },
+    email: settings.email ?? undefined,
+    sameAs: settings.instagramUrl ? [settings.instagramUrl] : undefined,
+    hasMap: settings.mapsUrl,
   };
 
   return (
