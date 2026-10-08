@@ -14,13 +14,13 @@ export function Hero({ section }: { section: HeroSection }) {
       </div>
       {section.showSearch !== false ? (
         <>
-          {/* Sem busca por datas ainda (Fase 3): chamada para a lista de acomodações. */}
+          {/* Sem busca por datas ainda (Fase 3): a chamada leva à lista de acomodações. */}
           <div className="pd2-find pd2-find-desktop">
-            <span className="f"><span className="k">Reservas</span><span className="v">Escolha a acomodação e consulte as datas</span></span>
-            <a className="pd2-link" href="#acomodacoes">Consultar disponibilidade</a>
+            <p className="v">Seis acomodações em Alfredo Wagner, SC. Escolha a sua para ver detalhes e reservar.</p>
+            <a className="pd2-link" href="#acomodacoes">Ver acomodações</a>
           </div>
           <div className="pd2-hero-mobile-action">
-            <a className="pd2-link pd2-hero-mobile-btn" href="#acomodacoes">Consultar disponibilidade</a>
+            <a className="pd2-link pd2-hero-mobile-btn" href="#acomodacoes">Ver acomodações</a>
           </div>
         </>
       ) : null}

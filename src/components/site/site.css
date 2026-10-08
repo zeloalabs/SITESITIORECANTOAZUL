@@ -54,7 +54,7 @@ html:has(.pd2) { scrollbar-color: rgba(243, 237, 224, .28) #070d1f; scrollbar-wi
 .pd2-find { position: relative; z-index: 3; margin: 30px var(--pad) 26px; padding-top: 14px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 30px; font-size: 14px; }
 .pd2-find .f { display: inline-flex; flex-direction: column; gap: 1px; }
 .pd2-find .k { color: var(--mut); font-size: 12.5px; }
-.pd2-find .v { font-family: var(--f-display); font-size: 17px; }
+.pd2-find .v { margin: 0; font-family: var(--f-display); font-size: 17px; }
 .pd2-find button { margin-left: auto; cursor: default; }
 
 .pd2-find-desktop { display: none; }

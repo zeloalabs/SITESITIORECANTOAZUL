@@ -50,7 +50,7 @@ export function Panels({ items, openFirst = null, tall = true }: { items: PanelI
             <p className="g">{it.guests}</p>
             <h3>{it.name}</h3>
             <p className="line">{it.line}</p>
-            <a className="pd2-link" href={it.href}>Consultar disponibilidade</a>
+            <a className="pd2-link" href={it.href}>Ver acomodação</a>
           </div>
         </article>
       ))}
